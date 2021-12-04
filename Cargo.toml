@@ -1,0 +1,17 @@
+[package]
+name = "advent-2021"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "advent_2021"
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = "1.0.51"
+aoc-runner = "0.3.0"
+aoc-runner-derive = "0.3.0"
+criterion = "0.3.5"
+itertools = "0.10.1"
