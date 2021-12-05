@@ -1,71 +1,6 @@
 use anyhow::{bail, Result};
 use core::ops;
 
-#[aoc_generator(day4)]
-fn gen(input: &str) -> (Vec<u32>, Vec<Board>) {
-    let mut elements = input.split("\n\n");
-
-    let numbers: Vec<u32> = elements
-        .next()
-        .unwrap()
-        .split(',')
-        .filter_map(|n| n.parse().ok())
-        .collect();
-
-    let boards = elements
-        .map(|board| {
-            board
-                .split('\n')
-                .map(|line| {
-                    line.split_whitespace()
-                        .filter_map(|s| s.parse().ok())
-                        .collect::<Vec<_>>()
-                })
-                .collect::<Vec<_>>()
-        })
-        .fold(Vec::new(), |mut v, board| {
-            let width = board[0].len();
-            let height = width;
-            let board: Vec<u32> = board.into_iter().flatten().collect();
-            v.push(Board::new(board, width, height).unwrap());
-            v
-        });
-
-    (numbers, boards)
-}
-
-#[aoc(day4, part1)]
-fn first(input: &(Vec<u32>, Vec<Board>)) -> u32 {
-    let (numbers, mut boards) = input.clone();
-    for num in numbers {
-        for board in &mut boards {
-            board.mark(num);
-            if board.is_win() {
-                return num * board.sum_unmarked();
-            }
-        }
-    }
-    unreachable!()
-}
-
-#[aoc(day4, part2)]
-fn second(input: &(Vec<u32>, Vec<Board>)) -> u32 {
-    let (numbers, mut boards) = input.clone();
-    for num in numbers {
-        for board in &mut boards {
-            board.mark(num);
-        }
-        if boards.len() == 1 {
-            if boards[0].is_win() {
-                return num * boards[0].sum_unmarked();
-            }
-        } else {
-            boards.retain(|board| !board.is_win());
-        }
-    }
-    unreachable!()
-}
-
 #[derive(Debug, Clone)]
 pub struct Board {
     board: Vec<(u32, bool)>,
@@ -157,7 +92,70 @@ impl ops::Index<(usize, usize)> for Board {
     }
 }
 
+#[aoc_generator(day4)]
+fn gen(input: &str) -> (Vec<u32>, Vec<Board>) {
+    let mut elements = input.split("\n\n");
 
+    let numbers: Vec<u32> = elements
+        .next()
+        .unwrap()
+        .split(',')
+        .filter_map(|n| n.parse().ok())
+        .collect();
+
+    let boards = elements
+        .map(|board| {
+            board
+                .split('\n')
+                .map(|line| {
+                    line.split_whitespace()
+                        .filter_map(|s| s.parse().ok())
+                        .collect::<Vec<_>>()
+                })
+                .collect::<Vec<_>>()
+        })
+        .fold(Vec::new(), |mut v, board| {
+            let width = board[0].len();
+            let height = width;
+            let board: Vec<u32> = board.into_iter().flatten().collect();
+            v.push(Board::new(board, width, height).unwrap());
+            v
+        });
+
+    (numbers, boards)
+}
+
+#[aoc(day4, part1)]
+fn first(input: &(Vec<u32>, Vec<Board>)) -> u32 {
+    let (numbers, mut boards) = input.clone();
+    for num in numbers {
+        for board in &mut boards {
+            board.mark(num);
+            if board.is_win() {
+                return num * board.sum_unmarked();
+            }
+        }
+    }
+    unreachable!()
+}
+
+#[aoc(day4, part2)]
+fn second(input: &(Vec<u32>, Vec<Board>)) -> u32 {
+    let (numbers, mut boards) = input.clone();
+    for num in numbers {
+        for board in &mut boards {
+            board.mark(num);
+        }
+        if boards.len() == 1 {
+            if boards[0].is_win() {
+                return num * boards[0].sum_unmarked();
+            }
+        } else {
+            boards.retain(|board| !board.is_win());
+        }
+    }
+    unreachable!()
+}
 
 #[cfg(test)]
 mod test {
