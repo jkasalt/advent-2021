@@ -10,6 +10,7 @@ name = "advent_2021"
 path = "src/lib.rs"
 
 [dependencies]
+ahash = "0.7.6"
 anyhow = "1.0.51"
 aoc-runner = "0.3.0"
 aoc-runner-derive = "0.3.0"
