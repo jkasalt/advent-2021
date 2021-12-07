@@ -18,7 +18,7 @@ fn compute(days: usize, input: &str) -> Num {
                 arr[n] += 1;
                 arr
             });
-    
+
     for _ in 0..days {
         fishes[..=6].rotate_left(1);
         let babbies = fishes[6];
