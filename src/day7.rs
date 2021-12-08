@@ -5,20 +5,6 @@ fn gen(input: &str) -> Vec<i32> {
     input.split(',').map(|s| s.parse().unwrap()).collect()
 }
 
-#[allow(dead_code)]
-fn median(v: &[i32], rng: &mut impl Rng) -> i32 {
-    if v.len() == 2 {
-        *v.iter().min().unwrap()
-    } else {
-        let k = rng.gen_range(0..v.len());
-        if k < v.len() / 2 {
-            median(&v[k..], rng)
-        } else {
-            median(&v[..k], rng)
-        }
-    }
-}
-
 #[aoc(day7, part1)]
 fn first(v: &[i32]) -> i32 {
     let mut w = vec![0; v.len()];
