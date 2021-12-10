@@ -78,7 +78,10 @@ fn decode_line(input: &str) -> u32 {
                 .iter()
                 .position(|num| **num == word)
                 .unwrap_or_else(|| {
-                    panic!("Cannot find {:#?} in {:#?} with input {}", word, so_far, input)
+                    panic!(
+                        "Cannot find {:#?} in {:#?} with input {}",
+                        word, so_far, input
+                    )
                 }) as u32
         })
         .rev()
