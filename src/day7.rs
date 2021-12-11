@@ -1,5 +1,3 @@
-use rand::prelude::*;
-
 #[aoc_generator(day7)]
 fn gen(input: &str) -> Vec<i32> {
     input.split(',').map(|s| s.parse().unwrap()).collect()
