@@ -3,15 +3,25 @@ use std::fmt;
 use std::ops;
 
 #[derive(Clone)]
-struct Matrix<T> {
+pub struct Matrix<T> {
     vec: Vec<T>,
     width: usize,
     height: usize,
 }
 
 impl<T> Matrix<T> {
+    pub fn new<I>(items: I, width: usize, height: usize) -> Self
+    where
+        I: IntoIterator<Item = T>,
+    {
+        Self {
+            vec: items.into_iter().collect(),
+            width,
+            height,
+        }
+    }
     #[allow(dead_code)]
-    fn get(&self, x: isize, y: isize) -> Option<&T> {
+    pub fn get(&self, x: isize, y: isize) -> Option<&T> {
         if x < 0
             || x > (self.width - 1).try_into().unwrap()
             || y < 0
@@ -25,7 +35,7 @@ impl<T> Matrix<T> {
     }
 
     #[allow(dead_code)]
-    fn neighbors_of(&self, x: usize, y: usize) -> [Option<&T>; 8] {
+    pub fn neighbors_of(&self, x: usize, y: usize) -> [Option<&T>; 8] {
         let x: isize = x.try_into().unwrap();
         let y: isize = y.try_into().unwrap();
 
@@ -41,7 +51,7 @@ impl<T> Matrix<T> {
         [top, topright, right, botright, bot, botleft, left, topleft]
     }
 
-    fn neighbor_indices(&self, x: usize, y: usize) -> Vec<(usize, usize)> {
+    pub fn neighbor_indices(&self, x: usize, y: usize) -> Vec<(usize, usize)> {
         let mut res = Vec::new();
         let mut xes = vec![x];
         let mut yes = vec![y];
@@ -67,14 +77,24 @@ impl<T> Matrix<T> {
         }
         res
     }
+
+    pub fn row(&self, i: usize) -> Vec<T>
+    where
+        T: Clone,
+    {
+        (0..self.width).map(|j| self[(i, j)].clone()).collect()
+    }
 }
 
-impl fmt::Debug for Matrix<Octopus> {
+impl<T> fmt::Debug for Matrix<T>
+where
+    T: fmt::Debug,
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut count = 0;
         writeln!(f)?;
-        for oct in &self.vec {
-            write!(f, "{:?}", oct)?;
+        for item in &self.vec {
+            write!(f, "{:?}", item)?;
             count += 1;
             if count == self.width {
                 count = 0;
