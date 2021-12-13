@@ -160,32 +160,38 @@ fn first(mat: &Matrix<Octopus>) -> u64 {
         }
         // Check for flashes
         let mut new_flashes = true;
+        let mut updated_pos = (0..mat.width) // Initialize with all positions at the start
+            .flat_map(|x| (0..mat.height).map(move |y| (x, y)))
+            .collect::<Vec<_>>();
         while new_flashes {
             new_flashes = false;
             let mut new_flash_indices = Vec::new();
-            for x in 0..mat.width {
-                for y in 0..mat.height {
-                    let oct = &mut mat[(x, y)];
-                    if oct.energy > 9 {
-                        oct.energy = 0;
-                        new_flashes = true;
-                        oct.has_flashed = true;
-                        count += 1;
-                        for pos in mat.neighbor_indices(x, y) {
-                            // Write down which octopi will have energy increased becasue of a neighbor flash
+            for (x, y) in updated_pos {
+                let oct = &mut mat[(x, y)];
+                if oct.energy > 9 {
+                    oct.energy = 0;
+                    new_flashes = true;
+                    oct.has_flashed = true;
+                    count += 1;
+                    for pos in mat.neighbor_indices(x, y) {
+                        // Write down which octopi will have energy increased
+                        // because of a neighbor flash
+                        if !mat[pos].has_flashed {
                             new_flash_indices.push(pos);
                         }
                     }
                 }
             }
+            updated_pos = new_flash_indices;
             // Increase energy of those who were flashed
-            for pos in new_flash_indices {
+            for &pos in &updated_pos {
                 let oct = &mut mat[pos];
                 if !oct.has_flashed {
-                    mat[pos].energy += 1;
+                    oct.energy += 1;
                 }
             }
         }
+        println!("{}", _t);
     }
     count
 }
