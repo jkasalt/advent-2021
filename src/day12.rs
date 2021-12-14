@@ -24,47 +24,62 @@ struct CaveSystem {
 }
 
 impl CaveSystem {
-    fn paths(&self, start: &str, end: &str) {
-        let start_idx = self
+    fn paths(
+        &self,
+        start: &str,
+        end: &str,
+        history: &[String],
+        count: &mut u32,
+        small_max: usize,
+    ) -> u32 {
+        // dbg!(&history, &count);
+
+        // println!(".....");
+        if start == end {
+            // println!("Reached end.. count: {}", *count + 1);
+            // println!("Path: {:?}", history);
+            return 1;
+        }
+
+        for cave_name in self.adjacent_of(start) {
+            let prev_occu = history
+                .iter()
+                .filter(|&h_cave| h_cave.eq(&cave_name))
+                .count();
+            if (cave_name == "start" || cave_name == "end") && history.contains(&cave_name) {
+                continue;
+            }
+            if cave_name.to_ascii_lowercase() == cave_name && prev_occu >= small_max {
+                continue;
+            }
+            // dbg!(&cave_name, prev_occu);
+            // println!("Moving, {} -> {}", start, cave_name);
+            let hist_new = {
+                let mut h = history.to_owned();
+                h.push(cave_name.clone());
+                h
+            };
+            *count += self.paths(&cave_name, "end", &hist_new, count, small_max);
+        }
+        if start == "start" {
+            return *count;
+        }
+        0
+    }
+
+    fn adjacent_of(&self, cave_name: &str) -> Vec<String> {
+        let cave_idx = self
             .cave_set
             .iter()
-            .position(|cave| cave.name == start)
+            .position(|nei| nei.name == cave_name)
             .unwrap();
-        let end_idx = self
-            .cave_set
-            .iter()
-            .position(|cave| cave.name == end)
-            .unwrap();
-        let start_adj = self
-            .adjacencies
-            .row(start_idx)
+        self.adjacencies
+            .row(cave_idx)
             .iter()
             .enumerate()
             .filter_map(|(i, elem)| if *elem == 1 { Some(i) } else { None })
-            .collect::<Vec<_>>();
-
-        let mut head = start_idx;
-        let mut stack = Vec::new();
-        let mut paths = Vec::new();
-        loop {
-            while head != end_idx {
-                // Mark current node as visited by adding it to the stack of parents
-                println!("head: {}", head);
-                stack.push(head);
-                // Move to the first adjacent cave we find
-                for (i, elem) in self.adjacencies.row(head).iter().enumerate() {
-                    if *elem == 1 && !(self.cave_set[i].small && stack.contains(&i)) {
-                        head = i;
-                    }
-                }
-            }
-            // Then we have found a path
-            println!("{:?}", stack);
-
-            if stack == start_adj && head == start_idx {
-                break;
-            }
-        }
+            .map(|i| self.cave_set[i].name.clone())
+            .collect::<Vec<_>>()
     }
 }
 
@@ -94,9 +109,14 @@ fn gen(input: &str) -> CaveSystem {
 }
 
 #[aoc(day12, part1)]
-fn first(cave_system: &CaveSystem) -> u64 {
-    cave_system.paths("start", "end");
-    todo!()
+fn first(cave_system: &CaveSystem) -> u32 {
+    cave_system.paths("start", "end", &["start".to_string()], &mut 0, 1)
+}
+
+
+#[aoc(day12, part2)]
+fn second(cave_system: &CaveSystem) -> u32 {
+    cave_system.paths("start", "end", &["start".to_string()], &mut 0, 2)
 }
 
 #[cfg(test)]
@@ -112,8 +132,18 @@ A-b
 b-d
 A-end
 b-end");
-        dbg!(&sample);
-        first(&sample);
-        panic!();
+        assert_eq!(first(&sample), 10);
+    }
+
+    #[test]
+    fn two() {
+        let sample = gen("start-A
+start-b
+A-c
+A-b
+b-d
+A-end
+b-end");
+        assert_eq!(second(&sample), 54);
     }
 }
