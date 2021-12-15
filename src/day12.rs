@@ -16,7 +16,7 @@ impl CaveSystem {
         visited_twice: bool,
     ) -> u64 {
         history.push(start.to_string());
-        for (_i, cave_name) in self.adjacencies[start].iter().enumerate() {
+        for cave_name in &self.adjacencies[start] {
             if cave_name == "start" {
                 continue;
             } else if cave_name == "end" {
@@ -40,7 +40,6 @@ impl CaveSystem {
             }
         }
         if start == "start" {
-            // dbg!(&paths);
             return *count;
         }
         0
