@@ -134,7 +134,11 @@ fn second(mat: &Matrix) -> u32 {
         .map(|lp| mat.basin_of(lp.0, lp.1))
         .collect::<Vec<_>>();
     b.sort_unstable_by_key(|basin| basin.len());
-    b.iter().rev().take(3).map(|basin| basin.len() as u32).product()
+    b.iter()
+        .rev()
+        .take(3)
+        .map(|basin| basin.len() as u32)
+        .product()
 }
 
 #[cfg(test)]

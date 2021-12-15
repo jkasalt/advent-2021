@@ -1,6 +1,5 @@
 use regex::Regex;
 use std::collections::HashSet;
-use std::io::stdin;
 
 struct FoldInfo {
     points: HashSet<(usize, usize)>,
