@@ -1,122 +1,78 @@
-use crate::day11::Matrix;
 use regex::Regex;
-use std::collections::{HashMap, HashSet};
-
-#[derive(Debug, Clone)]
-struct Cave {
-    name: String,
-    small: bool,
-}
-
-impl Cave {
-    pub fn new(name: &str) -> Self {
-        Self {
-            name: name.to_string(),
-            small: name.to_lowercase() == name,
-        }
-    }
-}
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 struct CaveSystem {
-    cave_set: Vec<Cave>,
-    adjacencies: Matrix<u8>,
+    adjacencies: HashMap<String, Vec<String>>,
 }
 
 impl CaveSystem {
     fn paths(
         &self,
         start: &str,
-        end: &str,
-        history: &[String],
-        count: &mut u32,
-        small_max: usize,
-    ) -> u32 {
-        // dbg!(&history, &count);
-
-        // println!(".....");
-        if start == end {
-            // println!("Reached end.. count: {}", *count + 1);
-            // println!("Path: {:?}", history);
-            return 1;
-        }
-
-        for cave_name in self.adjacent_of(start) {
-            let prev_occu = history
-                .iter()
-                .filter(|&h_cave| h_cave.eq(&cave_name))
-                .count();
-            if (cave_name == "start" || cave_name == "end") && history.contains(&cave_name) {
+        mut history: Vec<String>,
+        count: &mut u64,
+        part1: bool,
+        visited_twice: bool,
+    ) -> u64 {
+        history.push(start.to_string());
+        for (_i, cave_name) in self.adjacencies[start].iter().enumerate() {
+            if cave_name == "start" {
+                continue;
+            } else if cave_name == "end" {
+                *count += 1;
                 continue;
             }
-            if cave_name.to_ascii_lowercase() == cave_name && prev_occu >= small_max {
-                continue;
+            // If it's a small cave and we already visited it
+            if cave_name.to_lowercase() == *cave_name && history.contains(cave_name) {
+                if part1 {
+                    continue;
+                }
+                // If we already visited some cave twice skip this one
+                if visited_twice {
+                    continue;
+                }
+                // Otherwise visit this one for the second time
+                *count += self.paths(cave_name, history.clone(), count, part1, true);
+            } else {
+                // Otherwise proceed as normal
+                *count += self.paths(cave_name, history.clone(), count, part1, visited_twice);
             }
-            // dbg!(&cave_name, prev_occu);
-            // println!("Moving, {} -> {}", start, cave_name);
-            let hist_new = {
-                let mut h = history.to_owned();
-                h.push(cave_name.clone());
-                h
-            };
-            *count += self.paths(&cave_name, "end", &hist_new, count, small_max);
         }
         if start == "start" {
+            // dbg!(&paths);
             return *count;
         }
         0
-    }
-
-    fn adjacent_of(&self, cave_name: &str) -> Vec<String> {
-        let cave_idx = self
-            .cave_set
-            .iter()
-            .position(|nei| nei.name == cave_name)
-            .unwrap();
-        self.adjacencies
-            .row(cave_idx)
-            .iter()
-            .enumerate()
-            .filter_map(|(i, elem)| if *elem == 1 { Some(i) } else { None })
-            .map(|i| self.cave_set[i].name.clone())
-            .collect::<Vec<_>>()
     }
 }
 
 #[aoc_generator(day12)]
 fn gen(input: &str) -> CaveSystem {
     let re = Regex::new(r"(\w+)-(\w+)").unwrap();
-    let mut vertices = HashSet::new();
+    let mut adjacencies = HashMap::new();
     for cap in re.captures_iter(input) {
-        vertices.insert(cap[1].to_string());
-        vertices.insert(cap[2].to_string());
-    }
-    let h = vertices.len();
-    let vec: Vec<_> = vertices.into_iter().collect();
-    let mut mat = Matrix::new(vec![0; h * h], h, h);
-
-    for cap in re.captures_iter(input) {
-        let p1 = vec.iter().position(|name| name == &cap[1]).unwrap();
-        let p2 = vec.iter().position(|name| name == &cap[2]).unwrap();
-        mat[(p1, p2)] = 1;
-        mat[(p2, p1)] = 1;
+        adjacencies
+            .entry(cap[1].to_string())
+            .or_insert_with(Vec::new)
+            .push(cap[2].to_string());
+        adjacencies
+            .entry(cap[2].to_string())
+            .or_insert_with(Vec::new)
+            .push(cap[1].to_string());
     }
 
-    CaveSystem {
-        cave_set: vec.into_iter().map(|name| Cave::new(&name)).collect(),
-        adjacencies: mat,
-    }
+    CaveSystem { adjacencies }
 }
 
 #[aoc(day12, part1)]
-fn first(cave_system: &CaveSystem) -> u32 {
-    cave_system.paths("start", "end", &["start".to_string()], &mut 0, 1)
+fn first(cave_system: &CaveSystem) -> u64 {
+    cave_system.paths("start", Vec::new(), &mut 0, true, false)
 }
 
-
 #[aoc(day12, part2)]
-fn second(cave_system: &CaveSystem) -> u32 {
-    cave_system.paths("start", "end", &["start".to_string()], &mut 0, 2)
+fn second(cave_system: &CaveSystem) -> u64 {
+    cave_system.paths("start", Vec::new(), &mut 0, false, false)
 }
 
 #[cfg(test)]
@@ -144,6 +100,40 @@ A-b
 b-d
 A-end
 b-end");
-        assert_eq!(second(&sample), 54);
+        assert_eq!(second(&sample), 36);
+    }
+
+    #[test]
+    fn more() {
+        let i1 = gen("dc-end
+HN-start
+start-kj
+dc-start
+dc-HN
+LN-dc
+HN-end
+kj-sa
+kj-HN
+kj-dc");
+        let i2 = gen("fs-end
+he-DX
+fs-he
+start-DX
+pj-DX
+end-zg
+zg-sl
+zg-pj
+pj-he
+RW-he
+fs-DX
+pj-RW
+zg-RW
+start-pj
+he-WI
+zg-he
+pj-fs
+start-RW");
+        assert_eq!(second(&i1), 103);
+        assert_eq!(second(&i2), 3509);
     }
 }
