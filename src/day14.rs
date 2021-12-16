@@ -1,6 +1,5 @@
 use regex::Regex;
 use std::collections::HashMap;
-use std::iter;
 
 #[derive(Debug)]
 struct RuleSet {
