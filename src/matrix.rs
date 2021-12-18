@@ -33,10 +33,14 @@ impl<T> Matrix<T> {
         self.vec.get(x + y * self.width)
     }
 
-    pub fn rook_neighbor_indices(&self, x: usize, y: usize) -> impl Iterator<Item = (usize, usize)> {
+    pub fn rook_neighbor_indices(
+        &self,
+        x: usize,
+        y: usize,
+    ) -> impl Iterator<Item = (usize, usize)> {
         let mut res = Vec::new();
         if y > 0 {
-            res.push((x,y - 1));
+            res.push((x, y - 1));
         }
         if x > 0 {
             res.push((x - 1, y));

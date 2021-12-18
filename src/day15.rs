@@ -1,5 +1,7 @@
 use crate::matrix::Matrix;
-use std::collections::{HashMap, HashSet};
+use rand::prelude::*;
+use std::collections::{HashMap, HashSet, BinaryHeap};
+use std::cmp::Reverse;
 
 #[aoc_generator(day15)]
 fn gen(input: &str) -> Matrix<u32> {
@@ -12,12 +14,18 @@ fn gen(input: &str) -> Matrix<u32> {
 
 #[aoc(day15, part1)]
 fn first(field: &Matrix<u32>) -> u64 {
-    let mut memory = HashMap::new();
-    let res = field.risk_from(0, 0, Vec::new(), &mut memory);
-    let mut keys = memory.keys().collect::<Vec<_>>();
-    keys.sort_unstable();
-    println!("{:?}", field.final_path_from(0, 0, &memory, Vec::new()));
-    res.unwrap()
+    let mut distances = BinaryHeap::new();
+    let mut predecessor = HashMap::new();
+    let mut q = HashSet::new();
+
+    for x in 0..field.width() {
+        for y in 0..field.height() {
+            distances.insert(Reverse((None, (x,y))));
+            predecessor.insert((x,y), None);
+            q.push((x,y))
+        }
+    }
+    distances.insert(Reverse(((0,0), 0)));
 }
 
 trait Risk {
@@ -27,6 +35,7 @@ trait Risk {
         y: usize,
         visited: Vec<(usize, usize)>,
         memory: &mut HashMap<(usize, usize), u64>,
+        rng: &mut impl Rng,
     ) -> Option<u64>;
 
     fn final_path_from(
@@ -45,6 +54,7 @@ impl Risk for Matrix<u32> {
         y: usize,
         mut visited: Vec<(usize, usize)>,
         memory: &mut HashMap<(usize, usize), u64>,
+        rng: &mut impl Rng,
     ) -> Option<u64> {
         visited.push((x, y));
 
@@ -52,6 +62,8 @@ impl Risk for Matrix<u32> {
         //     "When we see ({},{}) .. we already visited {:?}",
         //     x, y, visited
         // );
+        //
+        // println!("memory: {:?}", memory);
 
         // If we start from the destination, the risk is just the value inside
         if x == self.width() - 1 && y == self.height() - 1 {
@@ -63,13 +75,13 @@ impl Risk for Matrix<u32> {
             Some(val)
         // Otherwise find the guys you can visit and recur
         } else {
-            let can_go = self
-                .rook_neighbor_indices(x, y)
-                .filter(|&(xn, yn)| !visited.contains(&(xn, yn)));
+            let mut can_go: Vec<_> = self.rook_neighbor_indices(x, y).collect();
+            can_go.shuffle(rng);
 
             let maybe_val = if visited.len() == 1 {
                 can_go
-                    .map(|(xn, yn)| (xn, yn, self.risk_from(xn, yn, Vec::new(), memory)))
+                    .iter()
+                    .map(|&(xn, yn)| (xn, yn, self.risk_from(xn, yn, visited.clone(), memory, rng)))
                     .inspect(|(xn, yn, elem)| {
                         println!(
                             "({},{}) -> ({},{}) .. found val {:?} + {}",
@@ -85,9 +97,8 @@ impl Risk for Matrix<u32> {
                     .min()
             } else {
                 can_go
-                    .map(|(xn, yn)| {
-                        (xn, yn, self.risk_from(xn, yn, visited.clone(), memory))
-                    })
+                    .iter()
+                    .map(|&(xn, yn)| (xn, yn, self.risk_from(xn, yn, visited.clone(), memory, rng)))
                     .inspect(|(xn, yn, elem)| {
                         println!(
                             "({},{}) -> ({},{}) .. found val {:?} + {}",
@@ -156,7 +167,7 @@ mod test {
     }
 
     #[test]
-    fn mini() {
+    fn mini1() {
         let input = gen("11
                          91");
         assert_eq!(first(&input), 2);
