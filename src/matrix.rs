@@ -88,6 +88,10 @@ impl<T> Matrix<T> {
     pub fn height(&self) -> usize {
         self.height
     }
+
+    pub fn len(&self) -> usize {
+        self.height * self.width
+    }
 }
 
 impl<T> fmt::Debug for Matrix<T>
@@ -122,9 +126,36 @@ impl<T> ops::Index<(usize, usize)> for Matrix<T> {
         &self.vec[x + y * self.width]
     }
 }
+
 impl<T> ops::IndexMut<(usize, usize)> for Matrix<T> {
     fn index_mut(&mut self, (x, y): (usize, usize)) -> &mut Self::Output {
         if x > self.width - 1 || y > self.height - 1 {
+            panic!(
+                "Index ({}, {}) out of range for Matrix with size ({}, {})",
+                y, x, self.height, self.width
+            );
+        }
+        &mut self.vec[x + y * self.width]
+    }
+}
+
+impl<T> ops::Index<(&usize, &usize)> for Matrix<T> {
+    type Output = T;
+
+    fn index(&self, (x, y): (&usize, &usize)) -> &Self::Output {
+        if *x > self.width - 1 || *y > self.height - 1 {
+            panic!(
+                "Index ({}, {}) out of range for Matrix with size ({}, {})",
+                y, x, self.height, self.width
+            );
+        }
+        &self.vec[x + y * self.width]
+    }
+}
+
+impl<T> ops::IndexMut<(&usize, &usize)> for Matrix<T> {
+    fn index_mut(&mut self, (x, y): (&usize, &usize)) -> &mut Self::Output {
+        if *x > self.width - 1 || *y > self.height - 1 {
             panic!(
                 "Index ({}, {}) out of range for Matrix with size ({}, {})",
                 y, x, self.height, self.width

@@ -1,9 +1,37 @@
 use crate::matrix::Matrix;
-use rand::prelude::*;
-use std::collections::{HashMap, HashSet, BinaryHeap};
-use std::cmp::Reverse;
+use std::collections::{BinaryHeap, HashMap};
 
-#[aoc_generator(day15)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct Point {
+    pos: (usize, usize),
+    weight: u32,
+}
+
+impl Point {
+    pub fn new(x: usize, y: usize, weight: u32) -> Self {
+        Self {
+            weight,
+            pos: (x, y),
+        }
+    }
+}
+
+impl PartialOrd for Point {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        other.weight.partial_cmp(&self.weight)
+    }
+}
+
+impl Ord for Point {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        other
+            .weight
+            .cmp(&self.weight)
+            .then_with(|| self.pos.cmp(&other.pos))
+    }
+}
+
+#[aoc_generator(day15, part1)]
 fn gen(input: &str) -> Matrix<u32> {
     let items = input.chars().filter_map(|c| c.to_digit(10));
     let width = input.chars().position(|c| c == '\n').unwrap();
@@ -13,135 +41,67 @@ fn gen(input: &str) -> Matrix<u32> {
 }
 
 #[aoc(day15, part1)]
-fn first(field: &Matrix<u32>) -> u64 {
-    let mut distances = BinaryHeap::new();
-    let mut predecessor = HashMap::new();
-    let mut q = HashSet::new();
+fn first(field: &Matrix<u32>) -> u32 {
+    let mut q = BinaryHeap::new();
+    let mut distances = HashMap::new();
 
     for x in 0..field.width() {
         for y in 0..field.height() {
-            distances.insert(Reverse((None, (x,y))));
-            predecessor.insert((x,y), None);
-            q.push((x,y))
+            distances.insert((x, y), u32::MAX);
         }
     }
-    distances.insert(Reverse(((0,0), 0)));
-}
+    q.push(Point::new(0, 0, 0));
+    *distances.get_mut(&(0, 0)).unwrap() = 0;
 
-trait Risk {
-    fn risk_from(
-        &self,
-        x: usize,
-        y: usize,
-        visited: Vec<(usize, usize)>,
-        memory: &mut HashMap<(usize, usize), u64>,
-        rng: &mut impl Rng,
-    ) -> Option<u64>;
+    while let Some(u) = q.pop() {
+        let Point { pos, weight } = u;
+        let (x, y) = pos;
 
-    fn final_path_from(
-        &self,
-        x: usize,
-        y: usize,
-        memory: &HashMap<(usize, usize), u64>,
-        visited: Vec<(usize, usize)>,
-    ) -> Vec<((usize, usize), u32)>;
-}
-
-impl Risk for Matrix<u32> {
-    fn risk_from(
-        &self,
-        x: usize,
-        y: usize,
-        mut visited: Vec<(usize, usize)>,
-        memory: &mut HashMap<(usize, usize), u64>,
-        rng: &mut impl Rng,
-    ) -> Option<u64> {
-        visited.push((x, y));
-
-        // println!(
-        //     "When we see ({},{}) .. we already visited {:?}",
-        //     x, y, visited
-        // );
-        //
-        // println!("memory: {:?}", memory);
-
-        // If we start from the destination, the risk is just the value inside
-        if x == self.width() - 1 && y == self.height() - 1 {
-            memory.insert((x, y), self[(x, y)] as u64);
-            Some(self[(x, y)] as u64)
+        if (x, y) == (field.width() - 1, field.height() - 1) {
+            return weight;
         }
-        // Otherwise if we already know the risk from a given point, just return that
-        else if let Some(&val) = memory.get(&(x, y)) {
-            Some(val)
-        // Otherwise find the guys you can visit and recur
-        } else {
-            let mut can_go: Vec<_> = self.rook_neighbor_indices(x, y).collect();
-            can_go.shuffle(rng);
+        if weight > distances[&(x, y)] {
+            continue;
+        }
+        for (xn, yn) in field.rook_neighbor_indices(x, y) {
+            let alt = weight.checked_add(field[(xn, yn)]).unwrap_or(u32::MAX);
+            let curr_distance = distances[&(xn, yn)];
 
-            let maybe_val = if visited.len() == 1 {
-                can_go
-                    .iter()
-                    .map(|&(xn, yn)| (xn, yn, self.risk_from(xn, yn, visited.clone(), memory, rng)))
-                    .inspect(|(xn, yn, elem)| {
-                        println!(
-                            "({},{}) -> ({},{}) .. found val {:?} + {}",
-                            x,
-                            y,
-                            xn,
-                            yn,
-                            elem,
-                            self[(x, y)]
-                        )
-                    })
-                    .filter_map(|(_, _, val)| val)
-                    .min()
-            } else {
-                can_go
-                    .iter()
-                    .map(|&(xn, yn)| (xn, yn, self.risk_from(xn, yn, visited.clone(), memory, rng)))
-                    .inspect(|(xn, yn, elem)| {
-                        println!(
-                            "({},{}) -> ({},{}) .. found val {:?} + {}",
-                            x,
-                            y,
-                            xn,
-                            yn,
-                            elem,
-                            self[(x, y)]
-                        )
-                    })
-                    .filter_map(|(_, _, val)| val)
-                    .min()
-                    .map(|maybe_val| self[(x, y)] as u64 + maybe_val)
-            };
-            if let Some(val) = maybe_val {
-                memory.insert((x, y), val);
+            if alt < curr_distance {
+                q.push(Point::new(xn, yn, alt));
+                *distances.get_mut(&(xn, yn)).unwrap() = alt;
             }
+        }
+    }
+    unreachable!()
+}
 
-            maybe_val
+#[aoc_generator(day15, part2)]
+fn gen2(input: &str) -> Matrix<u32> {
+    let small = gen(input);
+    let mut result = Matrix::new(
+        vec![0; 25 * small.len()],
+        small.width() * 5,
+        small.height() * 5,
+    );
+
+    for x in 0..result.width() {
+        for y in 0..result.height() {
+            let add_risk = ((x / small.width()) + (y / small.height())) as u32;
+            let rel_x = x % small.width();
+            let rel_y = y % small.height();
+            let val = (add_risk + small[(rel_x, rel_y)]) % 9;
+
+            result[(x, y)] = if val == 0 { 9 } else { val };
         }
     }
 
-    fn final_path_from(
-        &self,
-        x: usize,
-        y: usize,
-        memory: &HashMap<(usize, usize), u64>,
-        mut visited: Vec<(usize, usize)>,
-    ) -> Vec<((usize, usize), u32)> {
-        visited.push((x, y));
-        let (xb, yb) = self
-            .rook_neighbor_indices(x, y)
-            .filter(|neighbor| !visited.contains(neighbor))
-            .min_by_key(|neighbor| memory[neighbor])
-            .unwrap();
-        if x == self.width() - 1 && y == self.height() - 1 {
-            return vec![((x, y), self[(x, y)])];
-        }
-        let mut res = self.final_path_from(xb, yb, memory, visited.clone());
-        res.push(((x, y), self[(x, y)]));
-        res
-    }
+    result
+}
+
+#[aoc(day15, part2)]
+fn second(field: &Matrix<u32>) -> u32 {
+    first(field)
 }
 
 #[cfg(test)]

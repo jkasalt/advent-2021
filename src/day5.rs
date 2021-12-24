@@ -1,8 +1,8 @@
-use ahash::AHashMap;
 use anyhow::{anyhow, Error};
 use regex::Regex;
 use std::str::FromStr;
 use std::{cmp, ops};
+use std::collections::HashMap;
 
 #[derive(Hash, PartialEq, Eq, Debug, Clone)]
 struct Point {
@@ -80,7 +80,7 @@ impl ops::Sub<&Point> for &Point {
 
 #[aoc(day5, part1)]
 fn first(input: &str) -> u32 {
-    let mut map = AHashMap::new();
+    let mut map = HashMap::new();
     let re = Regex::new(r"(\d+,\d+) -> (\d+,\d+)").unwrap();
     for cap in re.captures_iter(input) {
         line(cap[1].parse().unwrap(), cap[2].parse().unwrap(), false)
@@ -91,7 +91,7 @@ fn first(input: &str) -> u32 {
 
 #[aoc(day5, part2)]
 fn second(input: &str) -> u32 {
-    let mut map = AHashMap::new();
+    let mut map = HashMap::new();
     let re = Regex::new(r"(\d+,\d+) -> (\d+,\d+)").unwrap();
     for cap in re.captures_iter(input) {
         line(cap[1].parse().unwrap(), cap[2].parse().unwrap(), true)
