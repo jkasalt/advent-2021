@@ -1,3 +1,4 @@
+// hahaha
 #[aoc(day10, part1)]
 fn first(input: &str) -> u32 {
     let mut count = 0;
