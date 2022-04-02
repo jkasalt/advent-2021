@@ -3,7 +3,7 @@ use colored::Colorize;
 use std::fmt;
 
 #[derive(Clone)]
-struct Octopus {
+pub struct Octopus {
     energy: u32,
     has_flashed: bool,
 }
@@ -28,7 +28,7 @@ impl fmt::Debug for Octopus {
 }
 
 #[aoc_generator(day11)]
-fn gen(input: &str) -> Matrix<Octopus> {
+pub fn gen(input: &str) -> Matrix<Octopus> {
     let width = input.chars().position(|c| c == '\n').unwrap();
     let height = input.lines().count();
     let vec = input
@@ -40,7 +40,7 @@ fn gen(input: &str) -> Matrix<Octopus> {
 }
 
 #[aoc(day11, part1)]
-fn first(mat: &Matrix<Octopus>) -> u64 {
+pub fn first(mat: &Matrix<Octopus>) -> u64 {
     let mut mat = (*mat).clone();
     let mut count = 0;
     for _t in 0..100 {
@@ -50,14 +50,15 @@ fn first(mat: &Matrix<Octopus>) -> u64 {
             oct.energy += 1;
         }
         // Check for flashes
-        let mut new_flashes = true;
         let mut updated_pos = (0..mat.width()) // Initialize with all positions at the start
             .flat_map(|x| (0..mat.height()).map(move |y| (x, y)))
             .collect::<Vec<_>>();
-        while new_flashes {
-            new_flashes = false;
+        loop {
+            // While there is a flash chain reaction going on...
+            let mut new_flashes = false;
             let mut new_flash_indices = Vec::new();
             for (x, y) in updated_pos {
+                // Find all the octopi that have flashed
                 let oct = &mut mat[(x, y)];
                 if oct.energy > 9 {
                     oct.energy = 0;
@@ -74,12 +75,16 @@ fn first(mat: &Matrix<Octopus>) -> u64 {
                 }
             }
             updated_pos = new_flash_indices;
-            // Increase energy of those who were flashed
+            // Increase energy of neighbors who received a flash
             for &pos in &updated_pos {
                 let oct = &mut mat[pos];
                 if !oct.has_flashed {
                     oct.energy += 1;
                 }
+            }
+            if !new_flashes {
+                // When the chain reaction is finished go to next timestep
+                break;
             }
         }
         println!("{}", _t);
@@ -88,7 +93,7 @@ fn first(mat: &Matrix<Octopus>) -> u64 {
 }
 
 #[aoc(day11, part2)]
-fn second(mat: &Matrix<Octopus>) -> u64 {
+pub fn second(mat: &Matrix<Octopus>) -> u64 {
     let mut mat = (*mat).clone();
     let mut t: u64 = 0;
     'outer: loop {

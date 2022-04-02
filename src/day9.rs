@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::ops;
 
 #[derive(Debug, Clone)]
-struct Matrix {
+pub struct Matrix {
     vec: Vec<u32>,
     width: usize,
     height: usize,
@@ -104,7 +104,7 @@ impl ops::Index<(usize, usize)> for Matrix {
 }
 
 #[aoc_generator(day9)]
-fn gen(input: &str) -> Matrix {
+pub fn gen(input: &str) -> Matrix {
     let width = input.chars().position(|c| c == '\n').unwrap();
     let height = input.lines().count();
     let vec = input.chars().filter_map(|c| c.to_digit(10)).collect();
@@ -113,9 +113,8 @@ fn gen(input: &str) -> Matrix {
 }
 
 #[aoc(day9, part1)]
-fn first(mat: &Matrix) -> u32 {
+pub fn first(mat: &Matrix) -> u32 {
     let mut heights = vec![];
-    dbg!(&mat);
     for x in 0..mat.width {
         for y in 0..mat.height {
             if mat.is_low_point(x, y) {
@@ -127,7 +126,7 @@ fn first(mat: &Matrix) -> u32 {
 }
 
 #[aoc(day9, part2)]
-fn second(mat: &Matrix) -> u32 {
+pub fn second(mat: &Matrix) -> u32 {
     let mut b = mat
         .low_points()
         .iter()

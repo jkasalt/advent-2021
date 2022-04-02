@@ -32,7 +32,7 @@ impl Ord for Point {
 }
 
 #[aoc_generator(day15, part1)]
-fn gen(input: &str) -> Matrix<u32> {
+pub fn gen(input: &str) -> Matrix<u32> {
     let items = input.chars().filter_map(|c| c.to_digit(10));
     let width = input.chars().position(|c| c == '\n').unwrap();
     let height = input.lines().count();
@@ -41,7 +41,7 @@ fn gen(input: &str) -> Matrix<u32> {
 }
 
 #[aoc(day15, part1)]
-fn first(field: &Matrix<u32>) -> u32 {
+pub fn first(field: &Matrix<u32>) -> u32 {
     let mut q = BinaryHeap::new();
     let mut distances = HashMap::new();
 
@@ -77,7 +77,7 @@ fn first(field: &Matrix<u32>) -> u32 {
 }
 
 #[aoc_generator(day15, part2)]
-fn gen2(input: &str) -> Matrix<u32> {
+pub fn gen2(input: &str) -> Matrix<u32> {
     let small = gen(input);
     let mut result = Matrix::new(
         vec![0; 25 * small.len()],
@@ -100,7 +100,7 @@ fn gen2(input: &str) -> Matrix<u32> {
 }
 
 #[aoc(day15, part2)]
-fn second(field: &Matrix<u32>) -> u32 {
+pub fn second(field: &Matrix<u32>) -> u32 {
     first(field)
 }
 

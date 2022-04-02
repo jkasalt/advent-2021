@@ -2,13 +2,13 @@ use regex::Regex;
 use std::collections::HashMap;
 
 #[derive(Debug)]
-struct RuleSet {
+pub struct RuleSet {
     orig: String,
     rules: HashMap<(char, char), char>,
 }
 
 #[aoc_generator(day14)]
-fn gen(input: &str) -> RuleSet {
+pub fn gen(input: &str) -> RuleSet {
     let orig = input.lines().next().unwrap().to_string();
     let mut rules = HashMap::new();
     let re = Regex::new(r"(\w+) -> (\w+)").unwrap();
@@ -60,11 +60,11 @@ fn compute(rule_set: &RuleSet, max_it: u8) -> u128 {
 }
 
 #[aoc(day14, part1)]
-fn first(rule_set: &RuleSet) -> u128 {
+pub fn first(rule_set: &RuleSet) -> u128 {
     compute(rule_set, 10)
 }
 #[aoc(day14, part2)]
-fn second(rule_set: &RuleSet) -> u128 {
+pub fn second(rule_set: &RuleSet) -> u128 {
     compute(rule_set, 40)
 }
 

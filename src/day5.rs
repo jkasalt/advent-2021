@@ -1,8 +1,8 @@
 use anyhow::{anyhow, Error};
 use regex::Regex;
+use std::collections::HashMap;
 use std::str::FromStr;
 use std::{cmp, ops};
-use std::collections::HashMap;
 
 #[derive(Hash, PartialEq, Eq, Debug, Clone)]
 struct Point {
@@ -60,7 +60,7 @@ fn line_diag(p1: Point, p2: Point) -> Box<dyn Iterator<Item = Point>> {
 impl FromStr for Point {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (s1, s2) = s.split_once(',').ok_or(anyhow!("need comma"))?;
+        let (s1, s2) = s.split_once(',').ok_or_else(|| anyhow!("need comma"))?;
         Ok(Self {
             x: s1.parse()?,
             y: s2.parse()?,
@@ -79,7 +79,7 @@ impl ops::Sub<&Point> for &Point {
 }
 
 #[aoc(day5, part1)]
-fn first(input: &str) -> u32 {
+pub fn first(input: &str) -> u32 {
     let mut map = HashMap::new();
     let re = Regex::new(r"(\d+,\d+) -> (\d+,\d+)").unwrap();
     for cap in re.captures_iter(input) {
@@ -90,7 +90,7 @@ fn first(input: &str) -> u32 {
 }
 
 #[aoc(day5, part2)]
-fn second(input: &str) -> u32 {
+pub fn second(input: &str) -> u32 {
     let mut map = HashMap::new();
     let re = Regex::new(r"(\d+,\d+) -> (\d+,\d+)").unwrap();
     for cap in re.captures_iter(input) {

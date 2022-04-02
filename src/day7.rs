@@ -1,10 +1,13 @@
 #[aoc_generator(day7)]
-fn gen(input: &str) -> Vec<i32> {
-    input.split(',').map(|s| s.parse().unwrap()).collect()
+pub fn gen(input: &str) -> Vec<i32> {
+    input
+        .split(',')
+        .map(|s| s.trim().parse().unwrap())
+        .collect()
 }
 
 #[aoc(day7, part1)]
-fn first(v: &[i32]) -> i32 {
+pub fn first(v: &[i32]) -> i32 {
     let mut w = vec![0; v.len()];
     w.copy_from_slice(v);
     w.sort_unstable();
@@ -13,7 +16,7 @@ fn first(v: &[i32]) -> i32 {
 }
 
 #[aoc(day7, part2)]
-fn second(v: &[i32]) -> i32 {
+pub fn second(v: &[i32]) -> i32 {
     let avg = v.iter().sum::<i32>() as f64 / v.len() as f64;
     ((avg - 0.5).floor() as i32..(avg + 0.5).ceil() as i32)
         .map(|p| {

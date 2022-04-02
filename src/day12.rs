@@ -2,7 +2,7 @@ use regex::Regex;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
-struct CaveSystem {
+pub struct CaveSystem {
     adjacencies: HashMap<String, Vec<String>>,
 }
 
@@ -47,7 +47,7 @@ impl CaveSystem {
 }
 
 #[aoc_generator(day12)]
-fn gen(input: &str) -> CaveSystem {
+pub fn gen(input: &str) -> CaveSystem {
     let re = Regex::new(r"(\w+)-(\w+)").unwrap();
     let mut adjacencies = HashMap::new();
     for cap in re.captures_iter(input) {
@@ -65,12 +65,12 @@ fn gen(input: &str) -> CaveSystem {
 }
 
 #[aoc(day12, part1)]
-fn first(cave_system: &CaveSystem) -> u64 {
+pub fn first(cave_system: &CaveSystem) -> u64 {
     cave_system.paths("start", Vec::new(), &mut 0, true, false)
 }
 
 #[aoc(day12, part2)]
-fn second(cave_system: &CaveSystem) -> u64 {
+pub fn second(cave_system: &CaveSystem) -> u64 {
     cave_system.paths("start", Vec::new(), &mut 0, false, false)
 }
 

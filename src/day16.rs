@@ -2,8 +2,9 @@ use bitvec::prelude::*;
 use bitvec::ptr::Const;
 
 #[aoc_generator(day16)]
-fn hex_to_bin(input: &str) -> BitVec {
+pub fn hex_to_bin(input: &str) -> BitVec {
     input
+        .trim()
         .chars()
         .flat_map(|ch| match ch {
             '0' => bitvec![0, 0, 0, 0],
@@ -99,8 +100,8 @@ impl Packet {
         }
     }
 
-    fn sum(&self) -> u32 {
-        self.version + self.sub_packets.iter().map(|p| p.sum()).sum::<u32>()
+    fn sum(&self) -> u128 {
+        self.version as u128 + self.sub_packets.iter().map(|p| p.sum()).sum::<u128>()
     }
 
     fn evaluate(&self) -> u128 {
@@ -120,13 +121,13 @@ impl Packet {
 }
 
 #[aoc(day16, part1)]
-fn first(input: &BitSlice) -> u32 {
+pub fn first(input: &BitSlice) -> u128 {
     let packet = Packet::new(input, &mut 0);
     packet.sum()
 }
 
 #[aoc(day16, part2)]
-fn second(input: &BitSlice) -> u128 {
+pub fn second(input: &BitSlice) -> u128 {
     let packet = Packet::new(input, &mut 0);
     packet.evaluate()
 }
@@ -140,7 +141,7 @@ mod test {
     #[test_case("620080001611562C8802118E34" => 12; "Sample 2")]
     #[test_case("C0015000016115A2E0802F182340" => 23; "Sample 3")]
     #[test_case("A0016C880162017C3686B18A3D4780" => 31; "Sample 4")]
-    fn one(input: &str) -> u32 {
+    fn one(input: &str) -> u128 {
         let input = hex_to_bin(input);
         let a = Packet::new(&input, &mut 0);
         a.sum()

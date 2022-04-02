@@ -1,11 +1,11 @@
 type Num = u64;
 #[aoc(day6, part1)]
-fn first(input: &str) -> Num {
+pub fn first(input: &str) -> Num {
     compute(80, input)
 }
 
 #[aoc(day6, part2)]
-fn second(input: &str) -> Num {
+pub fn second(input: &str) -> Num {
     compute(256, input)
 }
 
@@ -13,7 +13,7 @@ fn compute(days: usize, input: &str) -> Num {
     let mut fishes: [Num; 9] =
         input
             .split(',')
-            .map(|n| n.parse().unwrap())
+            .map(|n| n.trim().parse().unwrap())
             .fold([0; 9], |mut arr, n: usize| {
                 arr[n] += 1;
                 arr

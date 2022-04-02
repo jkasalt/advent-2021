@@ -1,7 +1,7 @@
 use regex::Regex;
 use std::collections::HashSet;
 
-struct FoldInfo {
+pub struct FoldInfo {
     points: HashSet<(usize, usize)>,
     folds: Vec<(char, usize)>,
 }
@@ -29,7 +29,7 @@ impl FoldInfo {
 }
 
 #[aoc_generator(day13)]
-fn gen(input: &str) -> FoldInfo {
+pub fn gen(input: &str) -> FoldInfo {
     let re_coord = Regex::new(r"(\d+),(\d+)").unwrap();
     let re_fold = Regex::new(r"fold along (\w)=(\d+)").unwrap();
     let mut points = HashSet::new();
@@ -92,7 +92,7 @@ fn fold_x(points: HashSet<(usize, usize)>, x_fold: usize) -> HashSet<(usize, usi
 }
 
 #[aoc(day13, part1)]
-fn first(fold_info: &FoldInfo) -> usize {
+pub fn first(fold_info: &FoldInfo) -> usize {
     let (d, num) = fold_info.folds[0];
     if d == 'x' {
         fold_x(fold_info.points.clone(), num).len()
@@ -104,7 +104,7 @@ fn first(fold_info: &FoldInfo) -> usize {
 }
 
 #[aoc(day13, part2)]
-fn second(fold_info: &FoldInfo) -> usize {
+pub fn second(fold_info: &FoldInfo) -> usize {
     fold_info.perform_folds();
     0
 }

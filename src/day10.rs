@@ -1,6 +1,5 @@
-// hahaha
 #[aoc(day10, part1)]
-fn first(input: &str) -> u32 {
+pub fn first(input: &str) -> u64 {
     let mut count = 0;
 
     'outer: for line in input.lines() {
@@ -40,7 +39,7 @@ fn first(input: &str) -> u32 {
 }
 
 #[aoc(day10, part2)]
-fn second(input: &str) -> u64 {
+pub fn second(input: &str) -> u64 {
     let mut scores = Vec::new();
     'line: for line in input.lines() {
         let mut stack = Vec::new();

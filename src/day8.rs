@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::iter;
 
 #[aoc(day8, part1)]
-fn first(input: &str) -> u32 {
+pub fn first(input: &str) -> u32 {
     input
         .lines()
         .map(|line| {
@@ -92,7 +92,7 @@ fn decode_line(input: &str) -> u32 {
 }
 
 #[aoc(day8, part2)]
-fn second(input: &str) -> u32 {
+pub fn second(input: &str) -> u32 {
     input.lines().map(decode_line).sum()
 }
 

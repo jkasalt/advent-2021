@@ -1,5 +1,5 @@
 #[aoc(day2, part1)]
-fn first(input: &str) -> i32 {
+pub fn first(input: &str) -> i32 {
     let mut forward = 0;
     let mut depth = 0;
     input
@@ -18,7 +18,7 @@ fn first(input: &str) -> i32 {
 }
 
 #[aoc(day2, part2)]
-fn second(input: &str) -> i32 {
+pub fn second(input: &str) -> i32 {
     let mut horizontal = 0;
     let mut depth = 0;
     let mut aim = 0;
