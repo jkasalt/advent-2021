@@ -1,5 +1,5 @@
 use anyhow::Context;
-use std::ops::Add;
+use std::ops::{Add, Index};
 use std::str::FromStr;
 
 #[derive(Debug)]
@@ -49,8 +49,7 @@ impl FromStr for Elem {
                     false
                 })
                 .context("Failed to find correspoding closing comma")?;
-            dbg!(&s, &ss, &comma_pos, &closing_pos);
-            let (subs1, subs2) = dbg!(ss[..closing_pos].split_at(comma_pos + 1));
+            let (subs1, subs2) = ss[..closing_pos].split_at(comma_pos + 1);
             let elem1 = Self::from_str(subs1)?;
             let elem2 = Self::from_str(subs2)?;
             return Ok(Self::Com(Box::new((elem1, elem2))));
@@ -62,13 +61,33 @@ impl FromStr for Elem {
     }
 }
 
+#[derive(Debug, Clone, PartialEq)]
+enum Dir {
+    Left,
+    Right,
+}
+
+impl Index<&[Dir]> for Elem {
+    type Output = Elem;
+    fn index(&self, index: &[Dir]) -> &Self::Output {
+        match self {
+            Elem::Num(_) => self,
+            Elem::Com(_) if index.is_empty() => self,
+            Elem::Com(b) => match index[0] {
+                Dir::Left => &b.0[&index[1..]],
+                Dir::Right => &b.1[&index[1..]],
+            },
+        }
+    }
+}
+
 impl Elem {
     fn reduce(mut self) -> Self {
         loop {
-            if self.has_nested(4) {
-                self.explode();
-            } else if self.has_splittable(10) {
-                self.split()
+            if let Some(dirs) = self.has_nested(4) {
+                self.explode(&dirs);
+            } else if let Some(dirs) = self.has_splittable(10) {
+                self.split(&dirs);
             } else {
                 break;
             }
@@ -76,19 +95,55 @@ impl Elem {
         self
     }
 
-    fn has_nested(&self, how_much: u32) -> bool {
+    fn is_simple(&self) -> bool {
+        if let Elem::Com(b) = self {
+            if b.0.is_num() && b.1.is_num() {
+                return true;
+            }
+        }
+        false
+    }
+
+    fn is_num(&self) -> bool {
+        match self {
+            Elem::Com(_) => false,
+            Elem::Num(_) => true,
+        }
+    }
+
+    pub fn has_nested(&self, how_much: u32) -> Option<Vec<Dir>> {
+        self.has_nested_inner(how_much, Vec::new())
+    }
+
+    fn has_nested_inner(&self, how_much: u32, dirs: Vec<Dir>) -> Option<Vec<Dir>> {
+        if self.is_simple() && how_much == 0 {
+            Some(dirs)
+        } else if let Elem::Com(b) = self {
+            let mut d0 = dirs.clone();
+            d0.push(Dir::Left);
+            b.0.has_nested_inner(how_much - 1, d0).or_else(|| {
+                let mut d1 = dirs;
+                d1.push(Dir::Right);
+                b.1.has_nested_inner(how_much - 1, d1)
+            })
+        } else {
+            None
+        }
+    }
+
+    fn carry_right(&mut self, n: u32, start: &[Dir]) {}
+
+    fn explode(&mut self, dirs: &[Dir]) {
+        let exploded = dbg!(&self[dirs]);
+    }
+
+    fn has_splittable(&self, how_much: u32) -> Option<Vec<Dir>> {
         todo!()
     }
 
-    fn has_splittable(&self, how_much: u32) -> bool {
+    fn split(&mut self, dirs: &[Dir]) {
         todo!()
     }
-
-    fn explode(&mut self) {
-        todo!()
-    }
-
-    fn split(&mut self) {}
 }
 
 #[cfg(test)]
@@ -111,5 +166,37 @@ mod test {
                 Elem::Com(Box::new((Elem::Num(8), Elem::Num(7))))
             ))),
         );
+    }
+
+    #[test]
+    fn nested() {
+        let elem1 = Elem::from_str("[[[[[9,8],1],2],3],4]").unwrap();
+        assert_eq!(
+            elem1.has_nested(4),
+            Some(vec![Dir::Left, Dir::Left, Dir::Left, Dir::Left])
+        );
+
+        let elem2 = Elem::from_str("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]").unwrap();
+        assert_eq!(
+            elem2.has_nested(4),
+            Some(vec![Dir::Left, Dir::Right, Dir::Right, Dir::Right])
+        )
+    }
+
+    #[test]
+    fn indexing() {
+        let elem1 = Elem::from_str("[[[[[9,8],1],2],3],4]").unwrap();
+        let nested1 = elem1.has_nested(4).unwrap();
+        assert_eq!(
+            elem1[&nested1],
+            Elem::Com(Box::new((Elem::Num(9), Elem::Num(8))))
+        );
+
+        let elem2 = Elem::from_str("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]").unwrap();
+        let nested2 = elem2.has_nested(4).unwrap();
+        assert_eq!(
+            elem2[&nested2],
+            Elem::Com(Box::new((Elem::Num(7), Elem::Num(3))))
+        )
     }
 }
