@@ -1,9 +1,9 @@
 use anyhow::Context;
-use std::ops::{Add, Index};
+use std::ops::{Add, Index, IndexMut};
 use std::str::FromStr;
 
 #[derive(Debug)]
-enum Elem {
+pub enum Elem {
     Com(Box<(Elem, Elem)>),
     Num(u32),
 }
@@ -61,10 +61,19 @@ impl FromStr for Elem {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
-enum Dir {
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Dir {
     Left,
     Right,
+}
+
+impl Dir {
+    fn opposite(&self) -> Self {
+        match self {
+            Dir::Left => Dir::Right,
+            Dir::Right => Dir::Left,
+        }
+    }
 }
 
 impl Index<&[Dir]> for Elem {
@@ -81,10 +90,23 @@ impl Index<&[Dir]> for Elem {
     }
 }
 
+impl IndexMut<&[Dir]> for Elem {
+    fn index_mut(&mut self, index: &[Dir]) -> &mut Self {
+        match self {
+            Elem::Num(_) => self,
+            Elem::Com(_) if index.is_empty() => self,
+            Elem::Com(b) => match index[0] {
+                Dir::Left => &mut b.0[&index[1..]],
+                Dir::Right => &mut b.1[&index[1..]],
+            },
+        }
+    }
+}
+
 impl Elem {
     fn reduce(mut self) -> Self {
         loop {
-            if let Some(dirs) = self.has_nested(4) {
+            if let Some(dirs) = self.find_nested(4) {
                 self.explode(&dirs);
             } else if let Some(dirs) = self.has_splittable(10) {
                 self.split(&dirs);
@@ -111,7 +133,7 @@ impl Elem {
         }
     }
 
-    pub fn has_nested(&self, how_much: u32) -> Option<Vec<Dir>> {
+    pub fn find_nested(&self, how_much: u32) -> Option<Vec<Dir>> {
         self.has_nested_inner(how_much, Vec::new())
     }
 
@@ -131,10 +153,48 @@ impl Elem {
         }
     }
 
-    fn carry_right(&mut self, n: u32, start: &[Dir]) {}
+    fn carry(&mut self, direc: Dir, n: u32, start: &[Dir]) {
+        let mut dirs = dbg!(start.to_owned());
+        while let Some(pos) = dirs.iter().rposition(|d| *d == direc.opposite()) {
+            dirs[pos] = direc;
+            dbg!(&dirs);
+            match self[&dirs] {
+                Elem::Num(m) => {
+                    self[&dirs] = Elem::Num(n + m);
+                    return;
+                }
+                Elem::Com(_) => dirs.push(direc.opposite()),
+            }
+        }
+    }
 
-    fn explode(&mut self, dirs: &[Dir]) {
-        let exploded = dbg!(&self[dirs]);
+    fn carry_right(&mut self, n: u32, start: &[Dir]) {
+        let mut dirs = start.to_owned();
+    }
+
+    pub fn explode(&mut self, dirs: &[Dir]) {
+        // Do the moving
+        let (l, r) = &self[dirs].unwrap();
+        self.carry(Dir::Left, *l, dirs);
+        self.carry(Dir::Right, *r, dirs);
+
+        // Change the exploded element to 0
+        self[dirs] = Elem::Num(0);
+    }
+
+    /// Panics if !self.is_simple()
+    fn unwrap(&self) -> (u32, u32) {
+        match self {
+            Elem::Num(_) => panic!("Called unwrap on {:?}", self),
+            Elem::Com(b) => {
+                if let Elem::Num(n0) = b.0 {
+                    if let Elem::Num(n1) = b.1 {
+                        return (n0, n1);
+                    }
+                }
+                panic!("Called unwrap on {:?}", self);
+            }
+        }
     }
 
     fn has_splittable(&self, how_much: u32) -> Option<Vec<Dir>> {
@@ -149,6 +209,7 @@ impl Elem {
 #[cfg(test)]
 mod test {
     use super::*;
+    use test_case::test_case;
 
     #[test]
     fn parsing() {
@@ -172,13 +233,13 @@ mod test {
     fn nested() {
         let elem1 = Elem::from_str("[[[[[9,8],1],2],3],4]").unwrap();
         assert_eq!(
-            elem1.has_nested(4),
+            elem1.find_nested(4),
             Some(vec![Dir::Left, Dir::Left, Dir::Left, Dir::Left])
         );
 
         let elem2 = Elem::from_str("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]").unwrap();
         assert_eq!(
-            elem2.has_nested(4),
+            elem2.find_nested(4),
             Some(vec![Dir::Left, Dir::Right, Dir::Right, Dir::Right])
         )
     }
@@ -186,17 +247,28 @@ mod test {
     #[test]
     fn indexing() {
         let elem1 = Elem::from_str("[[[[[9,8],1],2],3],4]").unwrap();
-        let nested1 = elem1.has_nested(4).unwrap();
+        let nested1 = elem1.find_nested(4).unwrap();
         assert_eq!(
             elem1[&nested1],
             Elem::Com(Box::new((Elem::Num(9), Elem::Num(8))))
         );
 
         let elem2 = Elem::from_str("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]").unwrap();
-        let nested2 = elem2.has_nested(4).unwrap();
+        let nested2 = elem2.find_nested(4).unwrap();
         assert_eq!(
             elem2[&nested2],
             Elem::Com(Box::new((Elem::Num(7), Elem::Num(3))))
         )
+    }
+
+    #[test_case("[[[[[9,8],1],2],3],4]", "[[[[0,9],2],3],4]"; "sample 1")]
+    #[test_case("[[6,[5,[4,[3,2]]]],1]", "[[6,[5,[7,0]]],3]"; "sample 3")]
+    #[test_case("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]", "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"; "sample 4")]
+    fn exploding(input: &str, expected: &str) {
+        let mut input = Elem::from_str(input).unwrap();
+        let expected = Elem::from_str(expected).unwrap();
+        let coord = input.find_nested(4).unwrap();
+        input.explode(&coord);
+        assert_eq!(input, expected);
     }
 }
