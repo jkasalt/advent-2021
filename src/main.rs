@@ -115,6 +115,9 @@ fn main() {
         16 => {
             run_with_gen(day16::first, Some(day16::second), day16::hex_to_bin, i_path);
         }
+        18 => {
+            run(day18::first, Some(day18::second), i_path);
+        }
         _ => {}
     }
 }
