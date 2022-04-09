@@ -1,5 +1,6 @@
+use std::ops::Deref;
+
 use bitvec::prelude::*;
-use bitvec::ptr::Const;
 
 #[aoc_generator(day16)]
 pub fn hex_to_bin(input: &str) -> BitVec {
@@ -28,9 +29,10 @@ pub fn hex_to_bin(input: &str) -> BitVec {
         .collect()
 }
 
-fn as_number<'a, I>(iter: I) -> u128
+pub fn as_number<I, K>(iter: I) -> u128
 where
-    I: Iterator<Item = BitRef<'a, Const>> + std::iter::DoubleEndedIterator,
+    I: Iterator<Item = K> + std::iter::DoubleEndedIterator,
+    K: Deref<Target = bool>,
 {
     iter.rev().enumerate().fold(0, |acc, (i, bit)| {
         acc + 2_u128.pow(i.try_into().unwrap()) * *bit as u128

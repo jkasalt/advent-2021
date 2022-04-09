@@ -118,6 +118,9 @@ fn main() {
         18 => {
             run(day18::first, Some(day18::second), i_path);
         }
+        20 => {
+            run(day20::first, Some(day20::second), i_path);
+        }
         _ => {}
     }
 }

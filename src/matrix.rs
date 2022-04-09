@@ -19,7 +19,6 @@ impl<T> Matrix<T> {
             height,
         }
     }
-    #[allow(dead_code)]
     pub fn get(&self, x: isize, y: isize) -> Option<&T> {
         if x < 0
             || x > (self.width - 1).try_into().unwrap()
@@ -91,6 +90,37 @@ impl<T> Matrix<T> {
 
     pub fn len(&self) -> usize {
         self.height * self.width
+    }
+
+    pub fn expand_contour(self, n: usize) -> Self
+    where
+        T: Default + Clone,
+    {
+        let height = self.height() + n * 2;
+        let width = self.width() + n * 2;
+
+        let mut new = Matrix {
+            vec: vec![T::default(); height * width],
+            height,
+            width,
+        };
+        for x in 0..self.width {
+            for y in 0..self.height {
+                new[(x + n, y + n)] = self[(x, y)].clone();
+            }
+        }
+        new
+    }
+
+    pub fn new_default(width: usize, height: usize) -> Self
+    where
+        T: Default + Clone,
+    {
+        Matrix {
+            vec: vec![T::default(); height * width],
+            height,
+            width,
+        }
     }
 }
 
