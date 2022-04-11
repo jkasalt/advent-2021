@@ -25,10 +25,10 @@ fn run_with_two_gen<G, D, K: ?Sized>(
 {
     let input = &fs::read_to_string(input_path).expect("correct path");
     let built1 = gen1(input);
-    println!("{}", p1(built1.borrow()));
+    println!("first: {}", p1(built1.borrow()));
     if let Some(p2) = p2 {
         let built2 = gen2.unwrap()(input);
-        println!("{}", p2(built2.borrow()));
+        println!("second: {}", p2(built2.borrow()));
     }
 }
 
@@ -43,17 +43,17 @@ fn run_with_gen<G, D, K: ?Sized>(
 {
     let input = &fs::read_to_string(input_path).expect("correct path");
     let built = gen(input);
-    println!("{}", p1(built.borrow()));
+    println!("first: {}", p1(built.borrow()));
     if let Some(p2) = p2 {
-        println!("{}", p2(built.borrow()));
+        println!("second: {}", p2(built.borrow()));
     }
 }
 
 fn run<D: Display>(p1: impl Fn(&str) -> D, p2: Option<impl Fn(&str) -> D>, input_path: &str) {
     let input = &fs::read_to_string(input_path).expect("correct path");
-    println!("{}", p1(input));
+    println!("first: {}", p1(input));
     if let Some(p2) = p2 {
-        println!("{}", p2(input));
+        println!("second: {}", p2(input));
     }
 }
 

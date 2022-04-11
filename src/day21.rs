@@ -5,7 +5,7 @@ use std::sync::Mutex;
 
 static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"Player \d+ starting position: (\d+)").unwrap());
 
-static HASH_MAP: Lazy<Mutex<HashMap<Players, (u128, u128)>>> =
+static HASH_MAP: Lazy<Mutex<HashMap<(Players, bool), (u128, u128)>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
@@ -63,7 +63,7 @@ fn play_deter(players: &mut [Player], max_points: u32) -> (usize, usize) {
     unreachable!()
 }
 
-const DICE: [[u8; 3]; 27] = [
+const DICE: [[u32; 3]; 27] = [
     [3, 1, 1],
     [3, 1, 2],
     [3, 1, 3],
@@ -93,42 +93,34 @@ const DICE: [[u8; 3]; 27] = [
     [1, 3, 3],
 ];
 
-fn play_dirac(mut players: Players, dice_throw: Option<[u8; 3]>, turn: bool) -> (u128, u128) {
-    // dbg!(&players, &dice_throw, &turn);
-    if let Some(dice) = dice_throw {
-        // Move the player
-        let roll: u8 = dice.iter().sum();
-        players[turn].handle_roll(roll as u32);
-        if players[turn].points >= 21 {
-            // If the current player has enough points
-            // We return the base case
+fn play_dirac(players: Players, turn: bool) -> (u128, u128) {
+    let mut win_count = (0, 0);
+    for dice in DICE {
+        let mut sub_players = players;
+        let roll = dice.iter().sum();
+        sub_players[turn].handle_roll(roll);
+        if sub_players[turn].points >= 21 {
             if turn {
-                return (0, 1);
+                win_count.1 += 1;
             } else {
-                return (1, 0);
+                win_count.0 += 1;
             }
-        }
-        // Now if we already know the result we give it
-        // Otherwise we return the wincounts from the next turns
-        let map = HASH_MAP.lock().unwrap();
-        if let Some(res) = map.get(&players) {
-            *res
         } else {
-            drop(map);
-            let res = play_dirac(players, None, !turn);
-            let mut map = HASH_MAP.lock().unwrap();
-            map.insert(players, res);
-            res
+            let map = HASH_MAP.lock().unwrap();
+            let sub_win_count = if let Some(res) = map.get(&(sub_players, turn)) {
+                *res
+            } else {
+                drop(map);
+                let res = play_dirac(sub_players, !turn);
+                let mut map = HASH_MAP.lock().unwrap();
+                map.insert((sub_players, turn), res);
+                res
+            };
+            win_count.0 += sub_win_count.0;
+            win_count.1 += sub_win_count.1;
         }
-    } else {
-        let mut win_count = (0, 0);
-        for dice in DICE {
-            let sub_win_counts = play_dirac(players, Some(dice), turn);
-            win_count.0 += sub_win_counts.0;
-            win_count.1 += sub_win_counts.1;
-        }
-        win_count
     }
+    win_count
 }
 
 pub fn first(input: &str) -> usize {
@@ -140,7 +132,7 @@ pub fn first(input: &str) -> usize {
             position,
         });
     }
-    let (loser, t_max) = dbg!(play_deter(&mut players, 1000));
+    let (loser, t_max) = play_deter(&mut players, 1000);
     players[loser].points as usize * t_max
 }
 
@@ -157,7 +149,7 @@ pub fn second(input: &str) -> usize {
         player0: players[0],
         player1: players[1],
     };
-    let res = play_dirac(players, None, false);
+    let res = play_dirac(players, false);
     if res.0 > res.1 {
         res.0.try_into().unwrap()
     } else {
