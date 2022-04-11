@@ -92,15 +92,15 @@ impl<T> Matrix<T> {
         self.height * self.width
     }
 
-    pub fn expand_contour(self, n: usize) -> Self
+    pub fn expand_contour(self, n: usize, with: T) -> Self
     where
-        T: Default + Clone,
+        T: Clone,
     {
         let height = self.height() + n * 2;
         let width = self.width() + n * 2;
 
         let mut new = Matrix {
-            vec: vec![T::default(); height * width],
+            vec: vec![with; height * width],
             height,
             width,
         };

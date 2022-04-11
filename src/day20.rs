@@ -13,7 +13,7 @@ fn print_mat(mat: &Matrix<bool>) {
     }
 }
 
-pub fn first(input: &str) -> u32 {
+fn compute(input: &str, t_max: u32) -> u32 {
     let (code, image) = input.split_once("\n\n").expect("valid input");
     let code: Vec<_> = code
         .chars()
@@ -25,7 +25,6 @@ pub fn first(input: &str) -> u32 {
         .collect();
     debug_assert!(code.len() == 512);
 
-    let t_max = 2;
     let width = image.lines().next().unwrap().len();
     let height = image.lines().count();
     let mut mat = Matrix::new(
@@ -38,9 +37,10 @@ pub fn first(input: &str) -> u32 {
         height,
     );
 
-    for _ in 0..t_max {
+    for t in 0..t_max {
         print_mat(&mat);
-        mat = mat.expand_contour(1);
+        let inf_point = if code[0] { t % 2 != 0 } else { false };
+        mat = mat.expand_contour(3, inf_point);
         let mut nines = Matrix::new_default(mat.width(), mat.height());
         // Collect surrounding states
         for x in 0..mat.width() {
@@ -50,7 +50,7 @@ pub fn first(input: &str) -> u32 {
                 let mut nine = Vec::new();
                 for yy in [y - 1, y, y + 1] {
                     for xx in [x - 1, x, x + 1] {
-                        let bit = mat.get(xx, yy).unwrap_or(&false);
+                        let bit = mat.get(xx, yy).unwrap_or(&inf_point);
                         nine.push(*bit);
                     }
                 }
@@ -73,8 +73,12 @@ pub fn first(input: &str) -> u32 {
     mat.vec.iter().filter(|b| **b).count() as u32
 }
 
-pub fn second(_input: &str) -> u32 {
-    1
+pub fn first(input: &str) -> u32 {
+    compute(input, 2)
+}
+
+pub fn second(input: &str) -> u32 {
+    compute(input, 50)
 }
 
 #[cfg(test)]

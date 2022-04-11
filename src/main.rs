@@ -3,6 +3,7 @@ use clap::Parser;
 use std::borrow::Borrow;
 use std::fmt::Display;
 use std::fs;
+use std::time::Instant;
 
 #[derive(Debug, Parser)]
 struct Args {
@@ -59,6 +60,7 @@ fn run<D: Display>(p1: impl Fn(&str) -> D, p2: Option<impl Fn(&str) -> D>, input
 fn main() {
     let args = Args::parse();
     let i_path = &format!("input/2021/day{}.txt", args.day);
+    let time_start = Instant::now();
 
     match args.day {
         1 => {
@@ -121,6 +123,12 @@ fn main() {
         20 => {
             run(day20::first, Some(day20::second), i_path);
         }
+        21 => {
+            run(day21::first, Some(day21::second), i_path);
+        }
         _ => {}
     }
+
+    let time_end = Instant::now();
+    println!("total time: {:?}", time_end.duration_since(time_start));
 }
