@@ -1,6 +1,8 @@
 use crate::day16::as_number;
 use crate::matrix::Matrix;
+use itertools::Itertools;
 
+#[allow(dead_code)]
 fn print_mat(mat: &Matrix<bool>) {
     for y in 0..mat.height() {
         for x in 0..mat.width() {
@@ -38,38 +40,49 @@ fn compute(input: &str, t_max: u32) -> u32 {
     );
 
     for t in 0..t_max {
-        print_mat(&mat);
+        // print_mat(&mat);
         let inf_point = if code[0] { t % 2 != 0 } else { false };
         mat = mat.expand_contour(3, inf_point);
-        let mut nines = Matrix::new_default(mat.width(), mat.height());
+        // let mut nines = Matrix::new_default(mat.width(), mat.height());
         // Collect surrounding states
-        for x in 0..mat.width() {
-            for y in 0..mat.height() {
-                let x = x as isize;
-                let y = y as isize;
-                let mut nine = Vec::new();
-                for yy in [y - 1, y, y + 1] {
-                    for xx in [x - 1, x, x + 1] {
-                        let bit = mat.get(xx, yy).unwrap_or(&inf_point);
-                        nine.push(*bit);
-                    }
-                }
-                nines[(x as usize, y as usize)] = nine;
-            }
-        }
+        // for x in 0..mat.width() {
+        //     for y in 0..mat.height() {
+        //         let x = x as isize;
+        //         let y = y as isize;
+        //         let nine: Vec<_> = [y - 1, y, y + 1]
+        //             .iter()
+        //             .cartesian_product([x - 1, x, x + 1].iter())
+        //             .map(|(&xx, &yy)| *mat.get(xx, yy).unwrap_or(&inf_point))
+        //             .collect();
+        //         nines[(x as usize, y as usize)] = nine;
+        //     }
+        // }
+        let items = (0..mat.width())
+            .cartesian_product(0..mat.height())
+            .map(|(x, y)| {
+                let nine: [bool; 9] = [y - 1, y, y + 1]
+                    .iter()
+                    .cartesian_product([x - 1, x, x + 1].iter())
+                    .map(|(&xx, &yy)| *mat.get(xx as isize, yy as isize).unwrap_or(&inf_point))
+                    .collect::<Vec<_>>()
+                    .try_into()
+                    .unwrap();
+                nine
+            });
+        let mut nines = Matrix::new(items, mat.width(), mat.height());
         // Apply code to image
         for x in 0..mat.width() {
             for y in 0..mat.height() {
-                let nine = nines[(x, y)].clone();
+                let nine = std::mem::take(&mut nines[(x, y)]);
                 let code_idx = as_number(nine.iter());
                 let new_state: bool = code[code_idx as usize];
                 mat[(x, y)] = new_state;
             }
         }
-        println!();
-        println!();
+        // println!();
+        // println!();
     }
-    print_mat(&mat);
+    // print_mat(&mat);
     mat.vec.iter().filter(|b| **b).count() as u32
 }
 

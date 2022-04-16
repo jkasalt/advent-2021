@@ -29,13 +29,13 @@ pub fn hex_to_bin(input: &str) -> BitVec {
         .collect()
 }
 
-pub fn as_number<I, K>(iter: I) -> u128
+pub fn as_number<I, K>(iter: I) -> u64
 where
     I: Iterator<Item = K> + std::iter::DoubleEndedIterator,
     K: Deref<Target = bool>,
 {
     iter.rev().enumerate().fold(0, |acc, (i, bit)| {
-        acc + 2_u128.pow(i.try_into().unwrap()) * *bit as u128
+        acc + 2_u64.pow(i.try_into().unwrap()) * *bit as u64
     })
 }
 
@@ -44,7 +44,7 @@ struct Packet {
     version: u32,
     type_id: u32,
     sub_packets: Vec<Packet>,
-    value: Option<u128>,
+    value: Option<u64>,
 }
 
 impl Packet {

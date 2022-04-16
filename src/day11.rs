@@ -87,7 +87,6 @@ pub fn first(mat: &Matrix<Octopus>) -> u64 {
                 break;
             }
         }
-        println!("{}", _t);
     }
     count
 }

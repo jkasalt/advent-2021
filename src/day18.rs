@@ -196,11 +196,10 @@ impl Elem {
     fn carry(&mut self, direc: Dir, n: u32, start: &[Dir]) {
         let mut dirs = start.to_owned();
         loop {
-            let last_dir = dirs.pop();
-            if last_dir.is_none() {
-                return;
-            }
-            let last_dir = last_dir.unwrap();
+            let last_dir = match dirs.pop() {
+                None => return,
+                Some(d) => d,
+            };
             if last_dir != direc {
                 dirs.push(direc);
                 dirs.push(direc.opposite());
