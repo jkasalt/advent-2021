@@ -1,4 +1,3 @@
-#[aoc(day2, part1)]
 pub fn first(input: &str) -> i32 {
     let mut forward = 0;
     let mut depth = 0;
@@ -17,7 +16,6 @@ pub fn first(input: &str) -> i32 {
     forward * depth
 }
 
-#[aoc(day2, part2)]
 pub fn second(input: &str) -> i32 {
     let mut horizontal = 0;
     let mut depth = 0;

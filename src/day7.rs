@@ -1,4 +1,3 @@
-#[aoc_generator(day7)]
 pub fn gen(input: &str) -> Vec<i32> {
     input
         .split(',')
@@ -6,7 +5,6 @@ pub fn gen(input: &str) -> Vec<i32> {
         .collect()
 }
 
-#[aoc(day7, part1)]
 pub fn first(v: &[i32]) -> i32 {
     let mut w = vec![0; v.len()];
     w.copy_from_slice(v);
@@ -15,7 +13,6 @@ pub fn first(v: &[i32]) -> i32 {
     w.iter().fold(0, |s, n| s + (med - n).abs())
 }
 
-#[aoc(day7, part2)]
 pub fn second(v: &[i32]) -> i32 {
     let avg = v.iter().sum::<i32>() as f64 / v.len() as f64;
     ((avg - 0.5).floor() as i32..(avg + 0.5).ceil() as i32)

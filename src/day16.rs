@@ -2,7 +2,6 @@ use std::ops::Deref;
 
 use bitvec::prelude::*;
 
-#[aoc_generator(day16)]
 pub fn hex_to_bin(input: &str) -> BitVec {
     input
         .trim()
@@ -122,13 +121,11 @@ impl Packet {
     }
 }
 
-#[aoc(day16, part1)]
 pub fn first(input: &BitSlice) -> u128 {
     let packet = Packet::new(input, &mut 0);
     packet.sum()
 }
 
-#[aoc(day16, part2)]
 pub fn second(input: &BitSlice) -> u128 {
     let packet = Packet::new(input, &mut 0);
     packet.evaluate()

@@ -1,8 +1,3 @@
-extern crate aoc_runner;
-
-#[macro_use]
-extern crate aoc_runner_derive;
-
 pub mod day1;
 pub mod day10;
 pub mod day11;
@@ -29,5 +24,3 @@ pub mod day7;
 pub mod day8;
 pub mod day9;
 mod matrix;
-
-aoc_lib! { year = 2021 }

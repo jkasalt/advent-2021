@@ -103,7 +103,6 @@ impl ops::Index<(usize, usize)> for Matrix {
     }
 }
 
-#[aoc_generator(day9)]
 pub fn gen(input: &str) -> Matrix {
     let width = input.chars().position(|c| c == '\n').unwrap();
     let height = input.lines().count();
@@ -112,7 +111,6 @@ pub fn gen(input: &str) -> Matrix {
     Matrix { vec, width, height }
 }
 
-#[aoc(day9, part1)]
 pub fn first(mat: &Matrix) -> u32 {
     let mut heights = vec![];
     for x in 0..mat.width {
@@ -125,7 +123,6 @@ pub fn first(mat: &Matrix) -> u32 {
     heights.iter().map(|h| h + 1).sum()
 }
 
-#[aoc(day9, part2)]
 pub fn second(mat: &Matrix) -> u32 {
     let mut b = mat
         .low_points()

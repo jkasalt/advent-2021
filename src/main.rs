@@ -3,6 +3,7 @@ use clap::Parser;
 use std::borrow::Borrow;
 use std::fmt::Display;
 use std::fs;
+use std::thread;
 use std::time::Instant;
 
 #[derive(Debug, Parser)]
@@ -45,16 +46,21 @@ fn run_with_gen<G, D, K: ?Sized>(
     println!("second: {}", p2(built.borrow()));
 }
 
-fn run<D: Display>(p1: impl Fn(&str) -> D, p2: impl Fn(&str) -> D, input_path: &str) {
-    let input = &fs::read_to_string(input_path).expect("correct path");
-    println!("first: {}", p1(input));
-    println!("second: {}", p2(input));
+fn run<D: Display, F>(p1: F, p2: impl Fn(&str) -> D, input_path: &str)
+where
+    F: Send + 'static + Sync + Fn(&str) -> D,
+{
+    let input = fs::read_to_string(input_path).expect("correct path");
+    let input_clone = input.clone();
+    let first_problem = thread::spawn(move || println!("first: {}", p1(&input_clone)));
+    println!("second: {}", p2(&input));
+    first_problem.join().unwrap();
 }
 
 fn main() {
     let args = Args::parse();
     let range = match args.day {
-        None => 1..=21,
+        None => 1..=25,
         Some(d) => d..=d,
     };
 
@@ -120,6 +126,8 @@ fn main() {
             21 => {
                 run(day21::first, day21::second, i_path);
             }
+            22 => run(day22::first, day22::second, i_path),
+            23 => run_with_two_gen(day23::first, day23::second, day23::parse, day23::parse_second, i_path),
             _ => {}
         }
         let time_end = Instant::now();

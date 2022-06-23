@@ -27,7 +27,6 @@ impl fmt::Debug for Octopus {
     }
 }
 
-#[aoc_generator(day11)]
 pub fn gen(input: &str) -> Matrix<Octopus> {
     let width = input.chars().position(|c| c == '\n').unwrap();
     let height = input.lines().count();
@@ -39,7 +38,6 @@ pub fn gen(input: &str) -> Matrix<Octopus> {
     Matrix::new(vec, width, height)
 }
 
-#[aoc(day11, part1)]
 pub fn first(mat: &Matrix<Octopus>) -> u64 {
     let mut mat = (*mat).clone();
     let mut count = 0;
@@ -91,7 +89,6 @@ pub fn first(mat: &Matrix<Octopus>) -> u64 {
     count
 }
 
-#[aoc(day11, part2)]
 pub fn second(mat: &Matrix<Octopus>) -> u64 {
     let mut mat = (*mat).clone();
     let mut t: u64 = 0;

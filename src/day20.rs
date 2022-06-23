@@ -60,6 +60,8 @@ fn compute(input: &str, t_max: u32) -> u32 {
         let items = (0..mat.width())
             .cartesian_product(0..mat.height())
             .map(|(x, y)| {
+                let x = x as isize;
+                let y = y as isize;
                 let nine: [bool; 9] = [y - 1, y, y + 1]
                     .iter()
                     .cartesian_product([x - 1, x, x + 1].iter())

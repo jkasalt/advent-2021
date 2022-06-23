@@ -7,7 +7,6 @@ pub struct RuleSet {
     rules: HashMap<(char, char), char>,
 }
 
-#[aoc_generator(day14)]
 pub fn gen(input: &str) -> RuleSet {
     let orig = input.lines().next().unwrap().to_string();
     let mut rules = HashMap::new();
@@ -59,11 +58,9 @@ fn compute(rule_set: &RuleSet, max_it: u8) -> u128 {
     count.values().max().unwrap() - count.values().min().unwrap()
 }
 
-#[aoc(day14, part1)]
 pub fn first(rule_set: &RuleSet) -> u128 {
     compute(rule_set, 10)
 }
-#[aoc(day14, part2)]
 pub fn second(rule_set: &RuleSet) -> u128 {
     compute(rule_set, 40)
 }

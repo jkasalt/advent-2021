@@ -92,7 +92,6 @@ impl ops::Index<(usize, usize)> for Board {
     }
 }
 
-#[aoc_generator(day4)]
 pub fn gen(input: &str) -> (Vec<u32>, Vec<Board>) {
     let mut elements = input.split("\n\n");
 
@@ -125,7 +124,6 @@ pub fn gen(input: &str) -> (Vec<u32>, Vec<Board>) {
     (numbers, boards)
 }
 
-#[aoc(day4, part1)]
 pub fn first(input: &(Vec<u32>, Vec<Board>)) -> u32 {
     let (numbers, mut boards) = input.clone();
     for num in numbers {
@@ -139,7 +137,6 @@ pub fn first(input: &(Vec<u32>, Vec<Board>)) -> u32 {
     unreachable!()
 }
 
-#[aoc(day4, part2)]
 pub fn second(input: &(Vec<u32>, Vec<Board>)) -> u32 {
     let (numbers, mut boards) = input.clone();
     for num in numbers {

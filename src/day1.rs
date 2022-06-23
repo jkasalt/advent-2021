@@ -1,7 +1,5 @@
 use itertools::Itertools;
-//use aoc_runner_derive::{aoc_generator, aoc};
 
-#[aoc_generator(day1)]
 pub fn gen(input: &str) -> Vec<u32> {
     input
         .lines()
@@ -9,12 +7,10 @@ pub fn gen(input: &str) -> Vec<u32> {
         .collect()
 }
 
-#[aoc(day1, part1)]
 pub fn first(input: &[u32]) -> usize {
     input.iter().tuple_windows().filter(|(a, b)| a < b).count()
 }
 
-#[aoc(day1, part2)]
 pub fn second(input: &[u32]) -> usize {
     input
         .iter()

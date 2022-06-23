@@ -46,7 +46,6 @@ impl CaveSystem {
     }
 }
 
-#[aoc_generator(day12)]
 pub fn gen(input: &str) -> CaveSystem {
     let re = Regex::new(r"(\w+)-(\w+)").unwrap();
     let mut adjacencies = HashMap::new();
@@ -64,12 +63,10 @@ pub fn gen(input: &str) -> CaveSystem {
     CaveSystem { adjacencies }
 }
 
-#[aoc(day12, part1)]
 pub fn first(cave_system: &CaveSystem) -> u64 {
     cave_system.paths("start", Vec::new(), &mut 0, true, false)
 }
 
-#[aoc(day12, part2)]
 pub fn second(cave_system: &CaveSystem) -> u64 {
     cave_system.paths("start", Vec::new(), &mut 0, false, false)
 }

@@ -28,7 +28,6 @@ impl FoldInfo {
     }
 }
 
-#[aoc_generator(day13)]
 pub fn gen(input: &str) -> FoldInfo {
     let re_coord = Regex::new(r"(\d+),(\d+)").unwrap();
     let re_fold = Regex::new(r"fold along (\w)=(\d+)").unwrap();
@@ -91,7 +90,6 @@ fn fold_x(points: HashSet<(usize, usize)>, x_fold: usize) -> HashSet<(usize, usi
         .collect()
 }
 
-#[aoc(day13, part1)]
 pub fn first(fold_info: &FoldInfo) -> usize {
     let (d, num) = fold_info.folds[0];
     if d == 'x' {
@@ -103,7 +101,6 @@ pub fn first(fold_info: &FoldInfo) -> usize {
     }
 }
 
-#[aoc(day13, part2)]
 pub fn second(fold_info: &FoldInfo) -> usize {
     fold_info.perform_folds();
     0

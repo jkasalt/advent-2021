@@ -1,7 +1,7 @@
 use std::fmt;
 use std::ops;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 pub struct Matrix<T> {
     pub vec: Vec<T>,
     width: usize,
@@ -30,6 +30,19 @@ impl<T> Matrix<T> {
         let x: usize = x.try_into().unwrap();
         let y: usize = y.try_into().unwrap();
         self.vec.get(x + y * self.width)
+    }
+
+    pub fn get_mut(&mut self, x: isize, y: isize) -> Option<&mut T> {
+        if x < 0
+            || x > (self.width - 1).try_into().unwrap()
+            || y < 0
+            || y > (self.height - 1).try_into().unwrap()
+        {
+            return None;
+        }
+        let x: usize = x.try_into().unwrap();
+        let y: usize = y.try_into().unwrap();
+        self.vec.get_mut(x + y * self.width)
     }
 
     pub fn rook_neighbor_indices(
@@ -92,6 +105,14 @@ impl<T> Matrix<T> {
         self.height * self.width
     }
 
+    pub fn insert_row_at(&mut self, mut other: Matrix<T>, at: usize) {
+        assert!(other.width() == self.width());
+        let idx = at * self.width();
+        let mut after = self.vec.split_off(idx);
+        self.vec.append(&mut other.vec);
+        self.vec.append(&mut after);
+    }
+
     pub fn expand_contour(self, n: usize, with: T) -> Self
     where
         T: Clone,
@@ -121,6 +142,12 @@ impl<T> Matrix<T> {
             height,
             width,
         }
+    }
+
+    pub fn swap(&mut self, a: (usize, usize), b: (usize, usize)) {
+        let idx_a = a.1 * self.width() + a.0;
+        let idx_b = b.1 * self.width() + b.0;
+        self.vec.swap(idx_a, idx_b)
     }
 }
 
@@ -192,5 +219,18 @@ impl<T> ops::IndexMut<(&usize, &usize)> for Matrix<T> {
             );
         }
         &mut self.vec[x + y * self.width]
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn test_swap() {
+        let items = 0..6;
+        let mut matrix = Matrix::new(items, 3, 2);
+        matrix.swap((0,0), (0,1));
+        assert_eq!(matrix[(0,0)], 3);
+        assert_eq!(matrix[(0,1)], 0);
     }
 }

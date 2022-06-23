@@ -1,10 +1,8 @@
 type Num = u64;
-#[aoc(day6, part1)]
 pub fn first(input: &str) -> Num {
     compute(80, input)
 }
 
-#[aoc(day6, part2)]
 pub fn second(input: &str) -> Num {
     compute(256, input)
 }

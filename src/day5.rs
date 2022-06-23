@@ -78,7 +78,6 @@ impl ops::Sub<&Point> for &Point {
     }
 }
 
-#[aoc(day5, part1)]
 pub fn first(input: &str) -> u32 {
     let mut map = HashMap::new();
     let re = Regex::new(r"(\d+,\d+) -> (\d+,\d+)").unwrap();
@@ -89,7 +88,6 @@ pub fn first(input: &str) -> u32 {
     map.values().filter(|&&v| v >= 2).count() as u32
 }
 
-#[aoc(day5, part2)]
 pub fn second(input: &str) -> u32 {
     let mut map = HashMap::new();
     let re = Regex::new(r"(\d+,\d+) -> (\d+,\d+)").unwrap();

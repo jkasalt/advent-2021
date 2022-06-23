@@ -1,4 +1,3 @@
-#[aoc(day10, part1)]
 pub fn first(input: &str) -> u64 {
     let mut count = 0;
 
@@ -38,7 +37,6 @@ pub fn first(input: &str) -> u64 {
     count
 }
 
-#[aoc(day10, part2)]
 pub fn second(input: &str) -> u64 {
     let mut scores = Vec::new();
     'line: for line in input.lines() {

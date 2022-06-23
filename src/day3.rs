@@ -25,7 +25,6 @@ fn bits_to_int(bits: &[bool]) -> i32 {
         .0
 }
 
-#[aoc_generator(day3)]
 pub fn gen(input: &str) -> Vec<Vec<bool>> {
     let input: Vec<_> = input
         .lines()
@@ -44,7 +43,6 @@ pub fn gen(input: &str) -> Vec<Vec<bool>> {
     input
 }
 
-#[aoc(day3, part1)]
 pub fn first(input: &[Vec<bool>]) -> i32 {
     let most_common = most_common(input);
     let epsilon = bits_to_int(&most_common);
@@ -54,7 +52,6 @@ pub fn first(input: &[Vec<bool>]) -> i32 {
     epsilon * gamma
 }
 
-#[aoc(day3, part2)]
 pub fn second(input: &[Vec<bool>]) -> i32 {
     let mut oxygen = input.to_vec();
     let mut i = 0;
