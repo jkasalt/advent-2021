@@ -65,7 +65,6 @@ pub fn parse_second(input: &str) -> Matrix<Cell> {
         "  #D#C#B#A###
   #D#B#A#C###",
     );
-    println!("{cells:?},,,{extension:?}");
     cells.insert_row_at(extension, 3);
     cells
 }
@@ -120,69 +119,64 @@ fn possible_moves_and_length(
         Cell::Free | Cell::Wall => return Vec::new(),
         Cell::Someone(c) => c,
     };
+    let corr_col = match color {
+        Color::A => 3,
+        Color::B => 5,
+        Color::C => 7,
+        Color::D => 9,
+    };
     if from.1 < 2 {
         // If the amphipod is in the hallway
         // Then its only possibility is to move to their destination room if it can
-        let first_destination = match color {
-            Color::A => (3, 3),
-            Color::B => (5, 3),
-            Color::C => (7, 3),
-            Color::D => (9, 3),
-        };
-        let second_destination = (first_destination.0, first_destination.1 - 1);
-        if let Some(n) = path_length(from, first_destination, cells) {
-            vec![(first_destination, n)]
-        } else if let Some(n) = path_length(from, second_destination, cells) {
-            if cells[first_destination] == cells[from] {
-                vec![(second_destination, n)]
-            } else {
-                vec![]
+
+        // If the room contains a amphipod with the wrong color we can't go in
+        for y in (2..cells.height() - 1).rev() {
+            let cell = cells[(corr_col, y)];
+            if matches!(cell, Cell::Someone(_)) && cell != Cell::Someone(color) {
+                return vec![];
             }
-        } else {
-            vec![]
+            // Otherwise we can go in if the cell is free and if there is a path
+            if cell == Cell::Free {
+                if let Some(len) = path_length(from, (corr_col, y), cells) {
+                    return vec![((corr_col, y), len)];
+                }
+            }
         }
+        vec![]
     } else {
         // Otherwise the amphipod is in one of the rooms
-        // If an amphipod is not already in the correct room and its not blocking someone who wants to
-        // move then we proceed
-        let correct_column = match color {
-            Color::A => 3,
-            Color::B => 5,
-            Color::C => 7,
-            Color::D => 9,
-        };
-        let blocking_someone = from.1 == 2
-            && matches!(cells[(correct_column, 3)], Cell::Someone(_))
-            && cells[(correct_column, 3)] != cells[from];
-        let snugly_parked = from == (correct_column, 3);
-        if from.0 == correct_column && (snugly_parked || !blocking_someone) {
-            return vec![];
+        // We don't move if we are in the correct room and all the folk behind us also have the
+        // correct color
+        if from.0 == corr_col
+            && (from.1..cells.height() - 1).all(|y| cells[(from.0, y)] == Cell::Someone(color))
+        {
+            vec![]
+        } else {
+            // An amphipod will never move in front of a room
+            let xes = [1, 2, 4, 6, 8, 10, 11];
+            xes.into_iter()
+                .filter_map(|x| path_length(from, (x, 1), cells).map(|n| ((x, 1), n)))
+                .collect()
         }
-        // An amphipod will never move in front of a room
-        let xes = vec![1, 2, 4, 6, 8, 10, 11];
-        xes.into_iter()
-            .filter_map(|x| {
-                if let Some(n) = path_length(from, (x, 1), cells) {
-                    Some(((x, 1), n))
-                } else {
-                    None
-                }
-            })
-            .collect()
     }
 }
 
 fn is_finished(cells: &Matrix<Cell>) -> bool {
-    let perfect = parse(
-        // This is inefficient because we parse it again and again each time, we should wrap it
-        // into a static Lazy<..>
-        r"#############
-#...........#
-###A#B#C#D###
-  #A#B#C#D#
-  #########",
-    );
-    *cells == perfect
+    for i in [3, 5, 7, 9] {
+        let correct_color = match i {
+            3 => Color::A,
+            5 => Color::B,
+            7 => Color::C,
+            9 => Color::D,
+            _ => unreachable!(),
+        };
+        for j in 2..cells.height() - 1 {
+            if cells[(i, j)] != Cell::Someone(correct_color) {
+                return false;
+            }
+        }
+    }
+    true
 }
 
 fn shortest_perfection(

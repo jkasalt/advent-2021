@@ -108,6 +108,7 @@ impl<T> Matrix<T> {
     pub fn insert_row_at(&mut self, mut other: Matrix<T>, at: usize) {
         assert!(other.width() == self.width());
         let idx = at * self.width();
+        self.height += other.height;
         let mut after = self.vec.split_off(idx);
         self.vec.append(&mut other.vec);
         self.vec.append(&mut after);
