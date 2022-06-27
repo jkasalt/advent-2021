@@ -3,7 +3,6 @@ use clap::Parser;
 use std::borrow::Borrow;
 use std::fmt::Display;
 use std::fs;
-use std::thread;
 use std::time::Instant;
 
 #[derive(Debug, Parser)]
@@ -48,13 +47,12 @@ fn run_with_gen<G, D, K: ?Sized>(
 
 fn run<D: Display, F>(p1: F, p2: impl Fn(&str) -> D, input_path: &str)
 where
-    F: Send + 'static + Sync + Fn(&str) -> D,
+    F: Fn(&str) -> D,
 {
     let input = fs::read_to_string(input_path).expect("correct path");
     let input_clone = input.clone();
-    let first_problem = thread::spawn(move || println!("first: {}", p1(&input_clone)));
+    println!("first: {}", p1(&input_clone));
     println!("second: {}", p2(&input));
-    first_problem.join().unwrap();
 }
 
 fn main() {
@@ -128,6 +126,8 @@ fn main() {
             }
             22 => run(day22::first, day22::second, i_path),
             23 => run_with_two_gen(day23::first, day23::second, day23::parse, day23::parse_second, i_path),
+            // 24 => run_with_gen(day24::first, day24::second, day24::gen, i_path),
+            25 => run_with_gen(day25::first, day25::second, day25::gen, i_path),
             _ => {}
         }
         let time_end = Instant::now();
