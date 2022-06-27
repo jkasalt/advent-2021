@@ -91,13 +91,6 @@ impl Overlap {
 }
 
 pub fn second(input: &str) -> u64 {
-    let instructions = parse(input);
-    for (i, inst) in instructions.iter().enumerate() {
-        for prev_inst in &instructions[..i] {
-            let overlap = inst.overlap(prev_inst);
-        }
-    }
-
     0
 }
 
