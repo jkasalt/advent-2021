@@ -5,8 +5,9 @@ use std::sync::Mutex;
 
 static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"Player \d+ starting position: (\d+)").unwrap());
 
-static HASH_MAP: Lazy<Mutex<HashMap<(Players, bool), (u128, u128)>>> =
-    Lazy::new(|| Mutex::new(HashMap::new()));
+type Wincounts = HashMap<(Players, bool), (u128, u128)>;
+
+static HASH_MAP: Lazy<Mutex<Wincounts>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 struct Player {
@@ -96,9 +97,10 @@ const DICE: [[u32; 3]; 27] = [
 fn play_dirac(players: Players, turn: bool) -> (u128, u128) {
     let mut win_count = (0, 0);
     for dice in DICE {
-        let mut sub_players = players;
+        let mut sub_players = players; // Copy players state
         let roll = dice.iter().sum();
         sub_players[turn].handle_roll(roll);
+        // Check if somebody won
         if sub_players[turn].points >= 21 {
             if turn {
                 win_count.1 += 1;
@@ -106,10 +108,12 @@ fn play_dirac(players: Players, turn: bool) -> (u128, u128) {
                 win_count.0 += 1;
             }
         } else {
+            // Dont recurse if we already know the outcome
             let map = HASH_MAP.lock().unwrap();
             let sub_win_count = if let Some(res) = map.get(&(sub_players, turn)) {
                 *res
             } else {
+                // Otherwise recurse with the other player rolling dice
                 drop(map);
                 let res = play_dirac(sub_players, !turn);
                 let mut map = HASH_MAP.lock().unwrap();
