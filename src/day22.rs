@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use regex::Regex;
 use std::{collections::HashMap, ops::RangeInclusive};
 
@@ -90,7 +91,7 @@ impl Overlap {
     }
 }
 
-pub fn second(input: &str) -> u64 {
+pub fn second(_input: &str) -> u64 {
     0
 }
 

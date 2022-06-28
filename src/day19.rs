@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -9,15 +10,15 @@ struct Scanner {
     detected: Vec<[i32; 3]>,
 }
 
-pub fn first(input: &str) -> u32 {
-    let mut scanners: Vec<[i32; 3]> = Vec::new();
-    let cap = REGEX_SCA
-        .captures(input.lines().next().unwrap())
-        .unwrap()
-        .get(1)
-        .expect("valid input");
-    for line in input.lines() {
-        if REGEX_SCA.is_match(line) {}
-    }
+pub fn first(_input: &str) -> u32 {
+    // let mut scanners: Vec<[i32; 3]> = Vec::new();
+    // let cap = REGEX_SCA
+    //     .captures(input.lines().next().unwrap())
+    //     .unwrap()
+    //     .get(1)
+    //     .expect("valid input");
+    // for line in input.lines() {
+    //     if REGEX_SCA.is_match(line) {}
+    // }
     todo!()
 }

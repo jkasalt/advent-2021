@@ -1,5 +1,5 @@
 use std::collections::HashSet;
-use std::{iter::Inspect, str::FromStr};
+use std::str::FromStr;
 
 #[derive(Debug, Clone, Hash)]
 enum Var {
@@ -232,6 +232,6 @@ fn as_usual_number(num: &[i8]) -> u64 {
         })
 }
 
-pub fn second(program: &Program) -> u64 {
+pub fn second(_program: &Program) -> u64 {
     0
 }
